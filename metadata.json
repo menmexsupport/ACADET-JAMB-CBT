@@ -1,0 +1,6 @@
+{
+  "name": "Acadet JAMB CBT",
+  "description": "JAMB UTME Computer-Based Testing platform with timed 4-subject exams, past questions, mock exams, study materials, and performance analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
