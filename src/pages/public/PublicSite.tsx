@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { apiFetch, setSessionToken } from '../../lib/api.ts';
+import heroStudentPhoto from '../../assets/images/hero_jamb_student_1795029634215.jpg';
 import { AuthUser, PlatformSettings, SubjectCombinationItem, SubjectItem } from '../../types/index.ts';
 
 export type PublicRoute =
@@ -619,7 +620,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                 <div className="min-h-[260px] bg-slate-100 lg:col-span-5">
                   {!heroImgFailed ? (
                     <img
-                      src="/src/assets/images/hero_jamb_student_1795029634215.jpg"
+                      src={heroStudentPhoto}
                       alt="Nigerian UTME candidate studying with Acadet JAMB CBT"
                       referrerPolicy="no-referrer"
                       onError={() => setHeroImgFailed(true)}

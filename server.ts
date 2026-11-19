@@ -83,15 +83,31 @@ async function bootstrap() {
     app.use(vite.middlewares);
   } else {
     const distDir = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distDir));
+    const indexHtml = path.join(distDir, 'index.html');
+    if (!fs.existsSync(indexHtml)) {
+      throw new Error(`Production frontend bundle not found at ${indexHtml}. Run "npm run build" before starting.`);
+    }
+    app.use(
+      express.static(distDir, {
+        index: false,
+        maxAge: '1d',
+        setHeaders: (res, filePath) => {
+          if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          }
+        },
+      })
+    );
     app.get('*', (_req, res) => {
-      res.sendFile(path.join(distDir, 'index.html'));
+      res.sendFile(indexHtml);
     });
   }
 
   const port = Number(process.env.PORT || 3000);
   const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`[Acadet JAMB CBT] Listening on http://0.0.0.0:${port} (db=${getDatabaseMode()}, env=${isProd ? 'production' : 'development'})`);
+    console.log(
+      `[Acadet JAMB CBT] Listening on http://0.0.0.0:${port} (db=${getDatabaseMode()}, env=${isProd ? 'production' : 'development'})`
+    );
   });
 
   const shutdown = async () => {

@@ -110,7 +110,7 @@ router.post('/auth/register', async (req, res) => {
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
 
-    const appBase = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const appBase = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
     const verifyUrl = `${appBase}/verify-email?token=${raw}`;
     await sendTransactionalEmail({
       to: created.email,
@@ -498,7 +498,7 @@ router.post('/auth/resend-verification', requireStudentAuth, async (req: AuthReq
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
   });
 
-  const appBase = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+  const appBase = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
   const verifyUrl = `${appBase}/verify-email?token=${raw}`;
   const result = await sendTransactionalEmail({
     to: student.email,
@@ -572,7 +572,7 @@ router.post('/auth/forgot-password', async (req, res) => {
       requestIp: req.ip || null,
     });
 
-    const appBase = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const appBase = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
     const resetUrl = `${appBase}/reset-password?token=${raw}`;
     await sendTransactionalEmail({
       to: student.email,
