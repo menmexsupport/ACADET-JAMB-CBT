@@ -2,15 +2,13 @@ services:
   - type: web
     name: acadet-jamb-cbt
     runtime: node
-    plan: starter
-    buildCommand: npm install --include=dev && npm run build
+    plan: free
+    buildCommand: npm install && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: "3000"
       - key: DATABASE_URL
         fromDatabase:
           name: acadet-jamb-cbt-db
@@ -21,19 +19,13 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
-      - key: APP_URL
-        sync: false
       - key: ADMIN_EMAIL
         value: admin@acadetjamb.com
-      - key: ADMIN_PASSWORD
-        sync: false
-      - key: RESEND_API_KEY
-        sync: false
       - key: SMTP_FROM_EMAIL
         value: "Acadet JAMB CBT <no-reply@acadetjamb.com>"
 
 databases:
   - name: acadet-jamb-cbt-db
-    plan: starter
+    plan: free
     databaseName: acadet_jamb_cbt
     user: acadet_jamb_user

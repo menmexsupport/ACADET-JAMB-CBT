@@ -373,92 +373,97 @@ export async function runSeed(): Promise<void> {
   }
 
   // 9. Study Materials (Real generated PDF documents saved locally)
-  const existingMaterials = await db.select({ id: studyMaterials.id }).from(studyMaterials).limit(1);
-  if (existingMaterials.length === 0) {
-    const uploadDir = path.resolve(process.cwd(), process.env.UPLOAD_DIR || './uploads', 'materials');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+  const uploadDir = path.resolve(process.cwd(), process.env.UPLOAD_DIR || './uploads', 'materials');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const materialSeeds = [
+    {
+      code: 'ENG',
+      title: 'JAMB Use of English: Lexis, Structure & Oral Forms Handbook',
+      description: 'Concise rules on concord, subjunctive mood, vowel/consonant stress patterns, and comprehension strategy.',
+      category: 'Study Notes',
+      fileName: 'use-of-english-handbook.pdf',
+      lines: [
+        'Subject: Use of English (Compulsory)',
+        '1. Concord Rules: With neither...nor, the verb agrees with the nearer noun.',
+        '2. Subjunctive: "It is high time" takes the past tense verb form.',
+        '3. Stress Patterns: Two-syllable nouns stress syllable 1; verbs stress syllable 2.',
+        '4. Prepositional Collocations: congratulate ON, abstain FROM, comply WITH.',
+      ],
+    },
+    {
+      code: 'MTH',
+      title: 'UTME Mathematics Formula Sheet & Revision Guide',
+      description: 'Essential formulas for algebra, trigonometry, differentiation, integration, and probability.',
+      category: 'Revision Materials',
+      fileName: 'mathematics-formula-sheet.pdf',
+      lines: [
+        'Subject: Mathematics (UTME Core)',
+        '1. Quadratic Roots: sum = -b/a, product = c/a.',
+        '2. Trigonometry: sin^2(x) + cos^2(x) = 1; tan(x) = sin(x)/cos(x).',
+        '3. Power Rule: d/dx (x^n) = n * x^(n-1).',
+        '4. Coordinate Geometry: m = (y2 - y1) / (x2 - x1).',
+      ],
+    },
+    {
+      code: 'PHY',
+      title: 'UTME Physics Key Laws, Equations & Mechanics Summary',
+      description: 'Quick-reference notes on Newton laws, gas laws, wave equations, Ohm law, and radioactivity.',
+      category: 'Tutorials',
+      fileName: 'physics-equations-summary.pdf',
+      lines: [
+        'Subject: Physics',
+        '1. Kinematics: v = u + at; s = ut + 0.5*a*t^2; v^2 = u^2 + 2as.',
+        '2. Gas Laws: P1*V1/T1 = P2*V2/T2 (Kelvin temperature required).',
+        '3. Waves: v = f * lambda.',
+        '4. Electricity: V = IR; Power P = IV = I^2 * R; Parallel 1/R = sum(1/Ri).',
+      ],
+    },
+    {
+      code: 'CHM',
+      title: 'UTME Chemistry Stoichiometry, Equilibrium & Organic Guide',
+      description: 'Structured revision sheet on mole calculations, pH scale, Le Chatelier principle, and functional groups.',
+      category: 'Study Notes',
+      fileName: 'chemistry-revision-guide.pdf',
+      lines: [
+        'Subject: Chemistry',
+        '1. Moles: n = mass / molar_mass; Gas volume at STP = n * 22.4 dm^3.',
+        '2. pH Calculation: pH = -log10([H+]).',
+        '3. Functional Groups: -OH (alkanol), -COOH (alkanoic acid), -COOR (ester).',
+        '4. Equilibrium: Higher pressure shifts gas equilibrium to fewer moles.',
+      ],
+    },
+    {
+      code: 'BIO',
+      title: 'UTME Biology Cell Biology, Genetics & Physiology Digest',
+      description: 'High-yield review of organelles, Mendelian crosses, mammalian heart circulation, and hormones.',
+      category: 'Revision Materials',
+      fileName: 'biology-high-yield-digest.pdf',
+      lines: [
+        'Subject: Biology',
+        '1. Organelles: Mitochondrion = ATP; Ribosome = Protein synthesis.',
+        '2. Genetics: Monohybrid Tt x Tt yields 1 TT : 2 Tt : 1 tt (3:1 phenotype).',
+        '3. Circulation: Left ventricle pumps oxygenated blood to the aorta.',
+        '4. Nucleic Acids: DNA uses Thymine (T); RNA uses Uracil (U).',
+      ],
+    },
+  ];
+
+  const existingMaterials = await db.select({ id: studyMaterials.id, fileName: studyMaterials.fileName }).from(studyMaterials);
+  const existingMaterialFiles = new Set(existingMaterials.map((m) => m.fileName));
+
+  for (const m of materialSeeds) {
+    const targetPath = path.join(uploadDir, m.fileName);
+    const pdfBuf = generateSamplePdfBuffer(m.title, m.lines);
+    if (!fs.existsSync(targetPath)) {
+      fs.writeFileSync(targetPath, pdfBuf);
     }
 
-    const materialSeeds = [
-      {
-        code: 'ENG',
-        title: 'JAMB Use of English: Lexis, Structure & Oral Forms Handbook',
-        description: 'Concise rules on concord, subjunctive mood, vowel/consonant stress patterns, and comprehension strategy.',
-        category: 'Study Notes',
-        fileName: 'use-of-english-handbook.pdf',
-        lines: [
-          'Subject: Use of English (Compulsory)',
-          '1. Concord Rules: With neither...nor, the verb agrees with the nearer noun.',
-          '2. Subjunctive: "It is high time" takes the past tense verb form.',
-          '3. Stress Patterns: Two-syllable nouns stress syllable 1; verbs stress syllable 2.',
-          '4. Prepositional Collocations: congratulate ON, abstain FROM, comply WITH.',
-        ],
-      },
-      {
-        code: 'MTH',
-        title: 'UTME Mathematics Formula Sheet & Revision Guide',
-        description: 'Essential formulas for algebra, trigonometry, differentiation, integration, and probability.',
-        category: 'Revision Materials',
-        fileName: 'mathematics-formula-sheet.pdf',
-        lines: [
-          'Subject: Mathematics (UTME Core)',
-          '1. Quadratic Roots: sum = -b/a, product = c/a.',
-          '2. Trigonometry: sin^2(x) + cos^2(x) = 1; tan(x) = sin(x)/cos(x).',
-          '3. Power Rule: d/dx (x^n) = n * x^(n-1).',
-          '4. Coordinate Geometry: m = (y2 - y1) / (x2 - x1).',
-        ],
-      },
-      {
-        code: 'PHY',
-        title: 'UTME Physics Key Laws, Equations & Mechanics Summary',
-        description: 'Quick-reference notes on Newton laws, gas laws, wave equations, Ohm law, and radioactivity.',
-        category: 'Tutorials',
-        fileName: 'physics-equations-summary.pdf',
-        lines: [
-          'Subject: Physics',
-          '1. Kinematics: v = u + at; s = ut + 0.5*a*t^2; v^2 = u^2 + 2as.',
-          '2. Gas Laws: P1*V1/T1 = P2*V2/T2 (Kelvin temperature required).',
-          '3. Waves: v = f * lambda.',
-          '4. Electricity: V = IR; Power P = IV = I^2 * R; Parallel 1/R = sum(1/Ri).',
-        ],
-      },
-      {
-        code: 'CHM',
-        title: 'UTME Chemistry Stoichiometry, Equilibrium & Organic Guide',
-        description: 'Structured revision sheet on mole calculations, pH scale, Le Chatelier principle, and functional groups.',
-        category: 'Study Notes',
-        fileName: 'chemistry-revision-guide.pdf',
-        lines: [
-          'Subject: Chemistry',
-          '1. Moles: n = mass / molar_mass; Gas volume at STP = n * 22.4 dm^3.',
-          '2. pH Calculation: pH = -log10([H+]).',
-          '3. Functional Groups: -OH (alkanol), -COOH (alkanoic acid), -COOR (ester).',
-          '4. Equilibrium: Higher pressure shifts gas equilibrium to fewer moles.',
-        ],
-      },
-      {
-        code: 'BIO',
-        title: 'UTME Biology Cell Biology, Genetics & Physiology Digest',
-        description: 'High-yield review of organelles, Mendelian crosses, mammalian heart circulation, and hormones.',
-        category: 'Revision Materials',
-        fileName: 'biology-high-yield-digest.pdf',
-        lines: [
-          'Subject: Biology',
-          '1. Organelles: Mitochondrion = ATP; Ribosome = Protein synthesis.',
-          '2. Genetics: Monohybrid Tt x Tt yields 1 TT : 2 Tt : 1 tt (3:1 phenotype).',
-          '3. Circulation: Left ventricle pumps oxygenated blood to the aorta.',
-          '4. Nucleic Acids: DNA uses Thymine (T); RNA uses Uracil (U).',
-        ],
-      },
-    ];
-
-    for (const m of materialSeeds) {
+    if (existingMaterials.length === 0 && !existingMaterialFiles.has(m.fileName)) {
       const subjectId = subjectMap.get(m.code);
       if (!subjectId) continue;
-      const pdfBuf = generateSamplePdfBuffer(m.title, m.lines);
-      const storageKey = `materials/${m.fileName}`;
-      fs.writeFileSync(path.join(uploadDir, m.fileName), pdfBuf);
 
       await db.insert(studyMaterials).values({
         subjectId,
@@ -468,7 +473,7 @@ export async function runSeed(): Promise<void> {
         fileName: m.fileName,
         fileType: 'application/pdf',
         fileSizeBytes: pdfBuf.length,
-        storageKey,
+        storageKey: `materials/${m.fileName}`,
         storageProvider: 'local',
         downloadCount: 0,
         isActive: true,

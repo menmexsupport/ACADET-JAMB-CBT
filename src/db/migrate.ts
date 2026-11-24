@@ -26,8 +26,11 @@ export async function runMigrations(): Promise<void> {
   console.log(`[db:migrate] Applied ${files.length} migration(s) (${getDatabaseMode()}).`);
 }
 
-// Allow direct CLI execution via `npm run db:migrate`
-const isDirectRun = process.argv[1]?.endsWith('migrate.ts') || process.argv[1]?.endsWith('migrate.js');
+// Allow direct CLI execution via `npm run db:migrate` or `npm run db:migrate:prod`
+const isDirectRun =
+  process.argv[1]?.endsWith('migrate.ts') ||
+  process.argv[1]?.endsWith('migrate.js') ||
+  process.argv[1]?.endsWith('migrate.cjs');
 if (isDirectRun) {
   runMigrations()
     .then(() => process.exit(0))

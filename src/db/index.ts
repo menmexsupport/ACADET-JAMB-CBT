@@ -130,36 +130,43 @@ export async function ensureDatabaseReady(): Promise<void> {
 
   if (isRenderPostgresConfigured()) {
     global._acadetDbMode = 'render_postgres';
-    try {
-      const pool = getPgPool();
-      await pool.query('SELECT 1');
-      global._acadetDb = drizzleNodePg(pool, { schema });
-      db = global._acadetDb;
-      return;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      const isSslMismatch =
-        msg.includes('does not support SSL') ||
-        msg.includes('SSL/TLS required') ||
-        msg.includes('no pg_hba.conf entry') ||
-        msg.includes('self-signed');
-      if (isSslMismatch) {
-        const nextSsl = !Boolean(global._acadetPgSslActive);
-        console.warn(`[db] Retrying PostgreSQL connection with ssl=${nextSsl} after TLS mismatch: ${msg}`);
-        try {
-          await global._acadetPgPool?.end();
-        } catch {
-          // ignore
-        }
-        const retryPool = createPgPool(nextSsl);
-        await retryPool.query('SELECT 1');
-        global._acadetPgPool = retryPool;
-        global._acadetDb = drizzleNodePg(retryPool, { schema });
+    const maxAttempts = 6;
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const pool = getPgPool();
+        await pool.query('SELECT 1');
+        global._acadetDb = drizzleNodePg(pool, { schema });
         db = global._acadetDb;
         return;
+      } catch (err) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        const isSslMismatch =
+          msg.includes('does not support SSL') ||
+          msg.includes('SSL/TLS required') ||
+          msg.includes('no pg_hba.conf entry') ||
+          msg.includes('self-signed');
+        if (isSslMismatch) {
+          const nextSsl = !Boolean(global._acadetPgSslActive);
+          console.warn(`[db] Retrying PostgreSQL connection with ssl=${nextSsl} after TLS mismatch: ${msg}`);
+          try {
+            await global._acadetPgPool?.end();
+          } catch {
+            // ignore
+          }
+          global._acadetPgPool = createPgPool(nextSsl);
+          continue;
+        }
+        if (attempt < maxAttempts) {
+          console.warn(
+            `[db] Waiting for Render PostgreSQL (attempt ${attempt}/${maxAttempts}): ${msg}`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
       }
-      throw err;
     }
+    throw lastError;
   }
 
   await initDbInstance();

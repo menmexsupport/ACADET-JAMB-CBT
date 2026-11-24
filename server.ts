@@ -73,7 +73,16 @@ async function bootstrap() {
     res.status(404).json({ error: 'API endpoint not found.' });
   });
 
-  const isProd = process.env.NODE_ENV === 'production';
+  const distDir = path.resolve(process.cwd(), 'dist');
+  const indexHtml = path.join(distDir, 'index.html');
+  const isProd =
+    process.env.NODE_ENV === 'production' ||
+    (process.env.RENDER === 'true' && fs.existsSync(indexHtml));
+
+  if (isProd && (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim().length < 16)) {
+    console.warn('[Acadet JAMB CBT] WARNING: JWT_SECRET is missing or shorter than 16 characters. Set JWT_SECRET in Render Environment Variables.');
+  }
+
   if (!isProd) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
@@ -82,8 +91,6 @@ async function bootstrap() {
     });
     app.use(vite.middlewares);
   } else {
-    const distDir = path.resolve(process.cwd(), 'dist');
-    const indexHtml = path.join(distDir, 'index.html');
     if (!fs.existsSync(indexHtml)) {
       throw new Error(`Production frontend bundle not found at ${indexHtml}. Run "npm run build" before starting.`);
     }
