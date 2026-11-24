@@ -1,5 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import {
+  ArrowLeft,
   Award,
   BarChart3,
   Bell,
@@ -11,8 +12,8 @@ import {
   FileText,
   GraduationCap,
   Home,
+  LayoutGrid,
   LogOut,
-  Menu,
   Moon,
   Play,
   Settings as SettingsIcon,
@@ -274,6 +275,20 @@ export default function StudentWorkspace({
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
+  const primaryMobileTabs: Array<{ id: StudentTab; label: string; icon: typeof Home }> = [
+    { id: 'dashboard', label: 'Home', icon: Home },
+    { id: 'start-cbt', label: 'Start Exam', icon: Play },
+    { id: 'past-questions', label: 'Past Qs', icon: FileQuestion },
+    { id: 'results', label: 'Results', icon: ClipboardCheck },
+  ];
+
+  const secondaryMobileItems = navItems.filter(
+    (item) => !primaryMobileTabs.some((primary) => primary.id === item.id)
+  );
+
+  const isMoreTabActive =
+    mobileNavOpen || !primaryMobileTabs.some((primary) => primary.id === tab);
+
   const selectTab = (next: StudentTab) => {
     setTab(next);
     setMobileNavOpen(false);
@@ -322,81 +337,125 @@ export default function StudentWorkspace({
         </div>
       </aside>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Secondary Navigation Bottom Sheet */}
       {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="flex w-72 flex-col bg-[#0F2447] text-blue-100">
-            <div className="flex h-14 items-center justify-between border-b border-blue-900 px-4">
-              <span className="font-display text-sm font-bold text-white">Acadet CBT JAMB</span>
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-slate-950/50 lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="More options"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full rounded-t-xl border-t border-slate-300 bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+              <div className="min-w-0">
+                <p className="truncate font-display text-sm font-bold text-[#0F2447] dark:text-white">
+                  {user.fullName}
+                </p>
+                <p className="font-mono text-xs text-slate-600 dark:text-slate-400">
+                  {user.registrationNumber}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md text-blue-200"
+                aria-label="Close menu"
+                className="flex h-11 w-11 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="flex-1 space-y-0.5 overflow-y-auto p-3">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => selectTab(item.id)}
-                    className={`flex min-h-[44px] w-full items-center gap-3 rounded-md px-3 text-sm font-medium ${
-                      tab === item.id ? 'bg-[#1D4ED8] text-white' : 'text-blue-200'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="border-t border-blue-900 p-3">
-              <button
-                type="button"
-                onClick={onLogout}
-                className="flex min-h-[44px] w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-rose-300"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Log Out</span>
-              </button>
+
+            <div className="max-h-[65vh] overflow-y-auto p-3">
+              <div className="grid grid-cols-2 gap-2">
+                {secondaryMobileItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = tab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => selectTab(item.id)}
+                      className={`flex min-h-[48px] items-center gap-2.5 rounded-md border px-3 py-2 text-left text-sm font-medium ${
+                        active
+                          ? 'border-[#1D4ED8] bg-blue-50 text-[#1D4ED8] dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-300'
+                          : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                      {item.id === 'notifications' && (dashboard?.stats.unreadNotificationsCount || 0) > 0 && (
+                        <span className="ml-auto font-mono text-xs font-bold text-rose-700 tabular-nums dark:text-rose-400">
+                          {dashboard?.stats.unreadNotificationsCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileNavOpen(false);
+                    onLogout();
+                  }}
+                  className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  <span>Log Out</span>
+                </button>
+              </div>
             </div>
           </div>
-          <div className="flex-1 bg-slate-950/50" onClick={() => setMobileNavOpen(false)} />
         </div>
       )}
 
       {/* Main Content Shell */}
-      <div className="flex min-w-0 flex-1 flex-col pb-16 lg:pb-0">
-        {/* Compact Top Bar (56px) */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-300 bg-white px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(true)}
-              aria-label="Open menu"
-              className="flex h-10 w-10 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 lg:hidden dark:text-slate-300"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">
-              {navItems.find((n) => n.id === tab)?.label || 'Student Portal'}
+      <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
+        {/* Compact Top Bar (52px mobile / 56px desktop) */}
+        <header className="sticky top-0 z-30 flex h-[52px] items-center justify-between border-b border-slate-300 bg-white px-3 sm:px-6 lg:h-14 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex min-w-0 items-center gap-2">
+            {tab !== 'dashboard' ? (
+              <button
+                type="button"
+                onClick={() => selectTab('dashboard')}
+                aria-label="Back to Home"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 lg:hidden dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+            ) : (
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#0F2447] text-white lg:hidden">
+                <GraduationCap className="h-4 w-4" />
+              </span>
+            )}
+            <h2 className="truncate font-display text-base font-bold text-[#0F2447] dark:text-white">
+              {tab === 'dashboard' ? (
+                <>
+                  <span className="lg:hidden">Acadet CBT</span>
+                  <span className="hidden lg:inline">Home</span>
+                </>
+              ) : (
+                navItems.find((n) => n.id === tab)?.label || 'Student Portal'
+              )}
             </h2>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => selectTab('notifications')}
               aria-label="Messages"
-              className="relative flex h-10 w-10 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="relative flex h-11 w-11 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-5 w-5 lg:h-4 lg:w-4" />
               {(dashboard?.stats.unreadNotificationsCount || 0) > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-700 font-mono text-[10px] font-bold text-white">
+                <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-sm bg-rose-700 px-1 font-mono text-[10px] font-bold text-white tabular-nums">
                   {dashboard?.stats.unreadNotificationsCount}
                 </span>
               )}
@@ -405,7 +464,8 @@ export default function StudentWorkspace({
             <button
               type="button"
               onClick={() => selectTab('profile')}
-              className="flex h-10 items-center gap-2 rounded-md border border-slate-300 px-2.5 text-left hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+              aria-label="Profile"
+              className="flex h-11 items-center gap-2 rounded-md border border-slate-300 px-2 text-left hover:bg-slate-50 sm:px-2.5 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               <div className="hidden text-right sm:block">
                 <p className="font-mono text-xs font-bold text-[#0F2447] dark:text-white">
@@ -908,37 +968,43 @@ export default function StudentWorkspace({
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation Bar (56px compact thumb zone) */}
-      <nav className="fixed right-0 bottom-0 left-0 z-30 grid h-14 grid-cols-5 border-t border-slate-300 bg-white lg:hidden dark:border-slate-800 dark:bg-slate-900">
-        {[
-          { id: 'dashboard' as StudentTab, label: 'Home', icon: Home },
-          { id: 'start-cbt' as StudentTab, label: 'Start Exam', icon: Play },
-          { id: 'past-questions' as StudentTab, label: 'Past Qs', icon: FileQuestion },
-          { id: 'results' as StudentTab, label: 'Results', icon: ClipboardCheck },
-        ].map((item) => {
+      {/* Mobile Bottom Tab Bar */}
+      <nav
+        aria-label="Primary mobile navigation"
+        className="fixed right-0 bottom-0 left-0 z-30 grid grid-cols-5 border-t border-slate-300 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden dark:border-slate-800 dark:bg-slate-900"
+      >
+        {primaryMobileTabs.map((item) => {
           const Icon = item.icon;
-          const active = tab === item.id;
+          const active = !mobileNavOpen && tab === item.id;
           return (
             <button
               key={item.id}
               type="button"
               onClick={() => selectTab(item.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${
-                active ? 'text-[#1D4ED8] dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'
+              aria-current={active ? 'page' : undefined}
+              className={`flex min-h-[54px] flex-col items-center justify-center gap-1 border-t-2 px-1 text-[11px] leading-none font-semibold ${
+                active
+                  ? 'border-[#1D4ED8] text-[#1D4ED8] dark:border-blue-400 dark:text-blue-400'
+                  : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
-              <Icon className="h-4 w-4" />
-              <span>{item.label}</span>
+              <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 1.75} />
+              <span className="whitespace-nowrap">{item.label}</span>
             </button>
           );
         })}
         <button
           type="button"
-          onClick={() => setMobileNavOpen(true)}
-          className="flex flex-col items-center justify-center gap-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400"
+          onClick={() => setMobileNavOpen((prev) => !prev)}
+          aria-expanded={mobileNavOpen}
+          className={`flex min-h-[54px] flex-col items-center justify-center gap-1 border-t-2 px-1 text-[11px] leading-none font-semibold ${
+            isMoreTabActive
+              ? 'border-[#1D4ED8] text-[#1D4ED8] dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
         >
-          <Menu className="h-4 w-4" />
-          <span>Menu</span>
+          <LayoutGrid className="h-5 w-5 shrink-0" strokeWidth={isMoreTabActive ? 2.25 : 1.75} />
+          <span className="whitespace-nowrap">More</span>
         </button>
       </nav>
     </div>
