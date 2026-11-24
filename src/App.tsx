@@ -135,11 +135,11 @@ export default function App() {
 
   if (!authChecked) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 text-slate-900">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0F2447] text-white shadow-sm">
-          <GraduationCap className="h-6 w-6" />
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#F4F6F8] text-slate-900">
+        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#0F2447] text-white">
+          <GraduationCap className="h-5 w-5" />
         </div>
-        <p className="mt-4 text-sm font-semibold text-slate-600">Loading Acadet JAMB CBT...</p>
+        <p className="mt-3 text-sm font-semibold text-slate-700">Loading Acadet CBT JAMB...</p>
       </div>
     );
   }

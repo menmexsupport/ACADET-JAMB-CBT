@@ -29,11 +29,14 @@ export default function CalculatorModal({ isOpen, onClose }: CalculatorModalProp
     [justEvaluated]
   );
 
-  const applyOperator = useCallback((op: string) => {
-    setJustEvaluated(false);
-    setExpression((prev) => `${prev}${display === 'Error' ? '0' : display} ${op} `);
-    setDisplay('0');
-  }, [display]);
+  const applyOperator = useCallback(
+    (op: string) => {
+      setJustEvaluated(false);
+      setExpression((prev) => `${prev}${display === 'Error' ? '0' : display} ${op} `);
+      setDisplay('0');
+    },
+    [display]
+  );
 
   const evaluate = useCallback(() => {
     try {
@@ -109,25 +112,25 @@ export default function CalculatorModal({ isOpen, onClose }: CalculatorModalProp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4">
-      <div className="w-full max-w-xs overflow-hidden rounded-xl border border-slate-300 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+      <div className="w-full max-w-xs overflow-hidden rounded-lg border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between bg-[#0F2447] px-4 py-3 text-white">
           <div>
-            <h3 className="text-sm font-bold">UTME CBT Calculator</h3>
-            <p className="text-[11px] text-blue-200">Keyboard digits &amp; operators supported</p>
+            <h3 className="text-sm font-bold">Calculator</h3>
+            <p className="text-[11px] text-blue-200">On-screen CBT calculator</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close calculator"
-            className="rounded-lg p-1 text-blue-200 hover:bg-blue-900 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-blue-200 hover:bg-blue-900 hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="p-4">
-          <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-right dark:border-slate-700 dark:bg-slate-950">
+          <div className="mb-3 rounded-md border border-slate-300 bg-slate-50 px-3 py-2.5 text-right dark:border-slate-700 dark:bg-slate-950">
             <div className="min-h-4 truncate font-mono text-xs text-slate-500 dark:text-slate-400">
               {expression || '\u00A0'}
             </div>
@@ -136,35 +139,35 @@ export default function CalculatorModal({ isOpen, onClose }: CalculatorModalProp
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 font-mono text-sm">
-            <button type="button" onClick={clearAll} className="rounded-lg bg-rose-50 py-2.5 font-bold text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300">AC</button>
-            <button type="button" onClick={backspace} aria-label="Backspace" className="flex items-center justify-center rounded-lg bg-slate-100 py-2.5 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200"><Delete className="h-4 w-4" /></button>
-            <button type="button" onClick={() => applyScientific('pct')} className="rounded-lg bg-slate-100 py-2.5 font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200">%</button>
-            <button type="button" onClick={() => applyOperator('÷')} className="rounded-lg bg-blue-50 py-2.5 font-bold text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300">÷</button>
+          <div className="grid grid-cols-4 gap-1.5 font-mono text-sm">
+            <button type="button" onClick={clearAll} className="min-h-[44px] rounded-md border border-rose-200 bg-rose-50 font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/60 dark:text-rose-300">AC</button>
+            <button type="button" onClick={backspace} aria-label="Backspace" className="flex min-h-[44px] items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"><Delete className="h-4 w-4" /></button>
+            <button type="button" onClick={() => applyScientific('pct')} className="min-h-[44px] rounded-md border border-slate-200 bg-slate-100 font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">%</button>
+            <button type="button" onClick={() => applyOperator('÷')} className="min-h-[44px] rounded-md border border-blue-200 bg-blue-50 font-bold text-[#1D4ED8] hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/60 dark:text-blue-300">÷</button>
 
-            <button type="button" onClick={() => applyScientific('sqrt')} className="rounded-lg bg-slate-100 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200">√x</button>
-            <button type="button" onClick={() => applyScientific('sq')} className="rounded-lg bg-slate-100 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200">x²</button>
-            <button type="button" onClick={() => applyScientific('inv')} className="rounded-lg bg-slate-100 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200">1/x</button>
-            <button type="button" onClick={() => applyOperator('×')} className="rounded-lg bg-blue-50 py-2.5 font-bold text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300">×</button>
+            <button type="button" onClick={() => applyScientific('sqrt')} className="min-h-[40px] rounded-md border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">√x</button>
+            <button type="button" onClick={() => applyScientific('sq')} className="min-h-[40px] rounded-md border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">x²</button>
+            <button type="button" onClick={() => applyScientific('inv')} className="min-h-[40px] rounded-md border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">1/x</button>
+            <button type="button" onClick={() => applyOperator('×')} className="min-h-[40px] rounded-md border border-blue-200 bg-blue-50 font-bold text-[#1D4ED8] hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/60 dark:text-blue-300">×</button>
 
             {['7', '8', '9'].map((n) => (
-              <button key={n} type="button" onClick={() => appendValue(n)} className="rounded-lg border border-slate-200 bg-white py-2.5 font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">{n}</button>
+              <button key={n} type="button" onClick={() => appendValue(n)} className="min-h-[44px] rounded-md border border-slate-300 bg-white font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">{n}</button>
             ))}
-            <button type="button" onClick={() => applyOperator('-')} className="rounded-lg bg-blue-50 py-2.5 font-bold text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300">−</button>
+            <button type="button" onClick={() => applyOperator('-')} className="min-h-[44px] rounded-md border border-blue-200 bg-blue-50 font-bold text-[#1D4ED8] hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/60 dark:text-blue-300">−</button>
 
             {['4', '5', '6'].map((n) => (
-              <button key={n} type="button" onClick={() => appendValue(n)} className="rounded-lg border border-slate-200 bg-white py-2.5 font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">{n}</button>
+              <button key={n} type="button" onClick={() => appendValue(n)} className="min-h-[44px] rounded-md border border-slate-300 bg-white font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">{n}</button>
             ))}
-            <button type="button" onClick={() => applyOperator('+')} className="rounded-lg bg-blue-50 py-2.5 font-bold text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300">+</button>
+            <button type="button" onClick={() => applyOperator('+')} className="min-h-[44px] rounded-md border border-blue-200 bg-blue-50 font-bold text-[#1D4ED8] hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/60 dark:text-blue-300">+</button>
 
             {['1', '2', '3'].map((n) => (
-              <button key={n} type="button" onClick={() => appendValue(n)} className="rounded-lg border border-slate-200 bg-white py-2.5 font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">{n}</button>
+              <button key={n} type="button" onClick={() => appendValue(n)} className="min-h-[44px] rounded-md border border-slate-300 bg-white font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">{n}</button>
             ))}
-            <button type="button" onClick={evaluate} className="row-span-2 rounded-lg bg-blue-600 py-2.5 font-bold text-white hover:bg-blue-700">=</button>
+            <button type="button" onClick={evaluate} className="row-span-2 rounded-md bg-[#1D4ED8] font-bold text-white hover:bg-blue-800">=</button>
 
-            <button type="button" onClick={() => applyScientific('neg')} className="rounded-lg border border-slate-200 bg-white py-2.5 font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">±</button>
-            <button type="button" onClick={() => appendValue('0')} className="rounded-lg border border-slate-200 bg-white py-2.5 font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">0</button>
-            <button type="button" onClick={() => appendValue('.')} className="rounded-lg border border-slate-200 bg-white py-2.5 font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">.</button>
+            <button type="button" onClick={() => applyScientific('neg')} className="min-h-[44px] rounded-md border border-slate-300 bg-white font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">±</button>
+            <button type="button" onClick={() => appendValue('0')} className="min-h-[44px] rounded-md border border-slate-300 bg-white font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">0</button>
+            <button type="button" onClick={() => appendValue('.')} className="min-h-[44px] rounded-md border border-slate-300 bg-white font-semibold text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">.</button>
           </div>
         </div>
       </div>

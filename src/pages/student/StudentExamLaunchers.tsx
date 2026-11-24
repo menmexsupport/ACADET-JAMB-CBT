@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Award,
-  BookOpen,
-  Calendar,
   CheckCircle2,
-  Clock,
   Eye,
   EyeOff,
   FileQuestion,
   Play,
-  SlidersHorizontal,
 } from 'lucide-react';
 import { apiFetch } from '../../lib/api.ts';
 import { SubjectCombinationItem, SubjectItem } from '../../types/index.ts';
@@ -128,7 +123,7 @@ export function StartCbtView({
 
   const launchUtme = async () => {
     if (!englishSubject || selectedElectiveIds.length !== 3) {
-      setError('Select exactly 3 elective subjects alongside compulsory Use of English.');
+      setError('Please select 3 subjects in addition to Use of English.');
       return;
     }
     try {
@@ -147,35 +142,37 @@ export function StartCbtView({
       });
       onSessionStarted(res.sessionId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to start UTME CBT.');
+      setError(err instanceof Error ? err.message : 'Unable to start examination.');
       setLaunching(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="font-display text-2xl font-bold text-[#0F2447] dark:text-white">
-          JAMB UTME CBT Check-In Desk
+        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">
+          Select your four subjects
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Use of English is compulsory. Select 3 elective subjects or apply a faculty preset to begin your CBT session.
+          Use of English is compulsory. Choose three other subjects or select a course combination below.
         </p>
       </div>
 
-      {/* Faculty Presets */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-sm font-bold text-slate-900 dark:text-white">Quick Faculty Combinations</h2>
-        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Course Combination Shortcuts */}
+      <div className="rounded-lg border border-slate-300 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-slate-300">
+          Course Combinations
+        </h2>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {combinations.map((c) => (
             <button
               key={c.id}
               type="button"
               onClick={() => applyCombination(c)}
-              className="rounded-lg border border-slate-200 p-3 text-left transition-colors hover:border-blue-500 hover:bg-blue-50/50 dark:border-slate-700 dark:hover:bg-blue-950/40"
+              className="min-h-[44px] rounded-md border border-slate-200 p-2.5 text-left hover:border-[#1D4ED8] hover:bg-blue-50/40 dark:border-slate-700 dark:hover:bg-blue-950/30"
             >
               <p className="truncate text-xs font-bold text-slate-900 dark:text-white">{c.name}</p>
-              <p className="mt-1 font-mono text-[11px] text-blue-700 dark:text-blue-400">
+              <p className="mt-0.5 font-mono text-[11px] text-[#1D4ED8] dark:text-blue-400">
                 {c.subjectCodes.join(' · ')}
               </p>
             </button>
@@ -183,12 +180,12 @@ export function StartCbtView({
         </div>
       </div>
 
-      {/* Subject Selection & Candidate Check-In Slip */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Select 3 Electives ({selectedElectiveIds.length}/3 selected)
+      {/* Subject Selection & Start Summary */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <div className="rounded-lg border border-slate-300 bg-white p-4 sm:p-5 lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+            <h2 className="text-sm font-bold text-[#0F2447] dark:text-white">
+              Choose 3 Subjects ({selectedElectiveIds.length}/3 selected)
             </h2>
             {englishSubject && (
               <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
@@ -198,22 +195,22 @@ export function StartCbtView({
           </div>
 
           {subjectsLoading ? (
-            <div className="rounded-lg border border-slate-200 p-6 text-center text-xs text-slate-500 dark:border-slate-800">
-              Loading 25 JAMB UTME subjects...
+            <div className="rounded-md border border-slate-200 p-6 text-center text-xs text-slate-500 dark:border-slate-800">
+              Loading subjects...
             </div>
           ) : electives.length === 0 ? (
-            <div className="rounded-lg border border-slate-200 p-6 text-center dark:border-slate-800">
+            <div className="rounded-md border border-slate-200 p-6 text-center dark:border-slate-800">
               <p className="text-xs text-slate-500">No subjects loaded.</p>
               <button
                 type="button"
                 onClick={loadSubjects}
-                className="mt-2 rounded-lg bg-[#0F2447] px-3 py-1.5 text-xs font-semibold text-white"
+                className="mt-2 rounded-md bg-[#0F2447] px-3 py-1.5 text-xs font-semibold text-white"
               >
-                Reload Subjects
+                Try Again
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {electives.map((sub) => {
                 const selected = selectedElectiveIds.includes(sub.id);
                 return (
@@ -221,9 +218,9 @@ export function StartCbtView({
                     key={sub.id}
                     type="button"
                     onClick={() => toggleElective(sub.id)}
-                    className={`flex items-center justify-between rounded-lg border px-3.5 py-3 text-left transition-colors ${
+                    className={`flex min-h-[48px] items-center justify-between rounded-md border px-3 py-2.5 text-left ${
                       selected
-                        ? 'border-blue-600 bg-blue-50 text-blue-950 dark:border-blue-500 dark:bg-blue-950/60 dark:text-white'
+                        ? 'border-[#1D4ED8] bg-blue-50 text-slate-950 dark:border-blue-500 dark:bg-blue-950/60 dark:text-white'
                         : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'
                     }`}
                   >
@@ -233,7 +230,7 @@ export function StartCbtView({
                         {sub.code} · {sub.questionCount || 0} questions
                       </p>
                     </div>
-                    {selected && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-[#1D4ED8]" />}
                   </button>
                 );
               })}
@@ -241,11 +238,10 @@ export function StartCbtView({
           )}
         </div>
 
-        {/* Candidate Check-In Slip & Launch Parameters */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-lg border border-slate-300 bg-white p-4 sm:p-5 lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
           <div className="border-b border-slate-200 pb-3 dark:border-slate-800">
             <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">
-              Candidate Exam Slip
+              Examination Summary
             </h2>
             {student && (
               <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
@@ -258,53 +254,52 @@ export function StartCbtView({
           </div>
 
           <div className="mt-4 space-y-4">
-            {/* Active 4-Subject Allocation Summary */}
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Selected 4-Subject Paper</p>
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Your Four Subjects</p>
               <p className="mt-1 text-xs font-bold text-slate-900 dark:text-white">
                 {selectedSubjectsList.map((s) => s.name).join(' · ')}
               </p>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                CBT Testing Mode
+              <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">
+                Test Mode
               </label>
-              <div className="grid grid-cols-2 gap-1.5 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+              <div className="grid grid-cols-2 gap-1 rounded-md border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800">
                 <button
                   type="button"
                   onClick={() => setExamMode('timed')}
-                  className={`rounded-md py-1.5 text-xs font-semibold transition-colors ${
+                  className={`min-h-[38px] rounded-sm text-xs font-semibold ${
                     examMode === 'timed'
-                      ? 'bg-white text-[#0F2447] shadow-xs dark:bg-slate-900 dark:text-white'
+                      ? 'bg-white text-[#0F2447] dark:bg-slate-900 dark:text-white'
                       : 'text-slate-600 dark:text-slate-300'
                   }`}
                 >
-                  Timed UTME Exam
+                  Timed Test
                 </button>
                 <button
                   type="button"
                   onClick={() => setExamMode('revision')}
-                  className={`rounded-md py-1.5 text-xs font-semibold transition-colors ${
+                  className={`min-h-[38px] rounded-sm text-xs font-semibold ${
                     examMode === 'revision'
-                      ? 'bg-white text-[#0F2447] shadow-xs dark:bg-slate-900 dark:text-white'
+                      ? 'bg-white text-[#0F2447] dark:bg-slate-900 dark:text-white'
                       : 'text-slate-600 dark:text-slate-300'
                   }`}
                 >
-                  Untimed Study Mode
+                  Study Mode (Untimed)
                 </button>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                  Questions
+                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">
+                  Total Questions
                 </label>
                 <select
                   value={questionCount}
                   onChange={(e) => setQuestionCount(Number(e.target.value))}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                  className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                 >
                   <option value={20}>20 Questions</option>
                   <option value={40}>40 Questions</option>
@@ -314,36 +309,36 @@ export function StartCbtView({
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">
-                  Time Limit
+                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">
+                  Duration
                 </label>
                 <select
                   disabled={examMode === 'revision'}
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800"
+                  className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800"
                 >
                   <option value={20}>20 Minutes</option>
                   <option value={45}>45 Minutes</option>
                   <option value={60}>60 Minutes</option>
                   <option value={90}>90 Minutes</option>
-                  <option value={120}>120 Mins (UTME)</option>
+                  <option value={120}>120 Mins (Full UTME)</option>
                 </select>
               </div>
             </div>
 
             {error && (
-              <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{error}</p>
+              <p className="rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-800">{error}</p>
             )}
 
             <button
               type="button"
               disabled={launching || selectedElectiveIds.length !== 3}
               onClick={launchUtme}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-md bg-emerald-700 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-50"
             >
               <Play className="h-4 w-4" />
-              <span>{launching ? 'Initializing Exam Hall...' : 'Enter CBT Exam Hall'}</span>
+              <span>{launching ? 'Starting Examination...' : 'Start Examination'}</span>
             </button>
           </div>
         </div>
@@ -402,7 +397,7 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
       });
       onSessionStarted(res.sessionId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to start practice exam.');
+      setError(err instanceof Error ? err.message : 'Unable to start practice test.');
       setLaunching(false);
     }
   };
@@ -430,31 +425,27 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Practice Examinations</h1>
+        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">Practice Tests</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure subject-based, topic-based, timed, or untimed revision drills, or pick a curated practice paper.
+          Practise one subject or topic at a time, or pick a ready-made test paper below.
         </p>
       </div>
 
-      {/* Custom Configurator */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-4 flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-blue-600" />
-          <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">Custom Practice Configurator</h2>
-        </div>
+      <div className="rounded-lg border border-slate-300 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">Set Up Single-Subject Practice</h2>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Subject</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Subject</label>
             <select
               value={subjectId}
               onChange={(e) => {
                 setSubjectId(e.target.value);
                 setTopicId('');
               }}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             >
               {subjects.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -465,41 +456,39 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Topic (Optional)</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Topic</label>
             <select
               value={topicId}
               onChange={(e) => setTopicId(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             >
               <option value="">All Topics</option>
               {(currentSubject?.topics || []).map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
+                <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Practice Mode</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Mode</label>
             <select
               value={examMode}
               onChange={(e) => setExamMode(e.target.value as 'timed' | 'revision')}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             >
-              <option value="timed">Timed CBT Mode</option>
-              <option value="revision">Revision Mode (Untimed)</option>
+              <option value="timed">Timed Test</option>
+              <option value="revision">Study Mode (Untimed)</option>
             </select>
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Difficulty</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Difficulty</label>
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as 'All' | 'Easy' | 'Medium' | 'Hard')}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             >
-              <option value="All">All Difficulties</option>
+              <option value="All">All Levels</option>
               <option value="Easy">Easy</option>
               <option value="Medium">Medium</option>
               <option value="Hard">Hard</option>
@@ -507,76 +496,75 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Questions</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Number of Questions</label>
             <input
               type="number"
               min={5}
               max={60}
               value={questionCount}
               onChange={(e) => setQuestionCount(Number(e.target.value))}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Duration (Mins)</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Time (Minutes)</label>
             <input
               type="number"
               min={5}
               max={120}
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-4 dark:border-slate-800">
           <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
             <input
               type="checkbox"
               checked={randomize}
               onChange={(e) => setRandomize(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-blue-600"
+              className="h-4 w-4 rounded border-slate-300 text-[#1D4ED8]"
             />
-            Randomize question selection
+            Mix question order
           </label>
 
           <button
             type="button"
             disabled={launching}
             onClick={startCustomPractice}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-[#0F2447] px-5 text-sm font-semibold text-white hover:bg-[#173566] disabled:opacity-50"
           >
             <Play className="h-4 w-4" />
-            <span>{launching ? 'Starting...' : 'Start Custom Practice'}</span>
+            <span>{launching ? 'Starting...' : 'Start Practice Test'}</span>
           </button>
         </div>
 
-        {error && <p className="mt-3 text-xs font-medium text-rose-600">{error}</p>}
+        {error && <p className="mt-3 text-xs font-medium text-rose-700">{error}</p>}
       </div>
 
-      {/* Curated Practice Blueprints */}
       <div>
-        <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white">Recommended Practice Papers</h2>
+        <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">Ready-Made Practice Papers</h2>
         <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {blueprints.map((bp) => (
-            <div key={bp.id} className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <div key={bp.id} className="flex flex-col justify-between rounded-lg border border-slate-300 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <div>
-                <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                <p className="text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">
                   {bp.questionCount} Questions · {bp.durationMinutes} Minutes
                 </p>
                 <h3 className="mt-1 font-display text-base font-bold text-slate-900 dark:text-white">{bp.title}</h3>
-                <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400">{bp.description}</p>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{bp.description}</p>
               </div>
               <button
                 type="button"
                 disabled={launching}
                 onClick={() => launchBlueprint(bp)}
-                className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white hover:bg-blue-800"
+                className="mt-4 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md bg-[#0F2447] px-4 text-xs font-semibold text-white hover:bg-[#173566]"
               >
                 <Play className="h-3.5 w-3.5" />
-                <span>Start CBT</span>
+                <span>Start Examination</span>
               </button>
             </div>
           ))}
@@ -608,7 +596,7 @@ export function MockExamsView({
   }, []);
 
   useEffect(() => {
-    loadMocks();
+    void loadMocks();
   }, [loadMocks]);
 
   const registerMock = async (mockId: string) => {
@@ -617,7 +605,7 @@ export function MockExamsView({
       await apiFetch(`/api/student/mocks/${mockId}/register`, { method: 'POST' });
       await loadMocks();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to register.');
+      setError(err instanceof Error ? err.message : 'Unable to register.');
     }
   };
 
@@ -627,98 +615,90 @@ export function MockExamsView({
       const res = await apiFetch<{ sessionId: string }>(`/api/exams/mock/${mockId}/start`, { method: 'POST' });
       onSessionStarted(res.sessionId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Cannot launch mock examination.');
+      setError(err instanceof Error ? err.message : 'Cannot start mock examination.');
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Scheduled Mock Examinations</h1>
+        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">Mock Examinations</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          National UTME simulations with server-enforced schedule windows and eligibility rules.
+          Scheduled timed tests that match official UTME rules.
         </p>
       </div>
 
-      {error && <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-800">{error}</p>}
+      {error && <p className="rounded-md border border-rose-300 bg-rose-50 px-4 py-2.5 text-xs text-rose-800">{error}</p>}
 
       {loading ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-lg border border-slate-300 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
           Loading mock examinations...
         </div>
       ) : mocks.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
-          <Award className="mx-auto h-10 w-10 text-slate-400" />
-          <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-300">No scheduled mocks at this time.</p>
+        <div className="rounded-lg border border-slate-300 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No mock examinations scheduled right now.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {mocks.map((m) => (
-            <div key={m.id} className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+            <div key={m.id} className="rounded-lg border border-slate-300 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center justify-between gap-2">
                 <span
                   className={`text-xs font-bold ${
                     m.windowStatus === 'active'
-                      ? 'text-emerald-600'
+                      ? 'text-emerald-700'
                       : m.windowStatus === 'upcoming'
-                      ? 'text-blue-600'
+                      ? 'text-[#1D4ED8]'
                       : 'text-slate-500'
                   }`}
                 >
-                  {m.windowStatus === 'active' ? 'Window Open Now' : m.windowStatus === 'upcoming' ? 'Upcoming' : 'Window Closed'}
+                  {m.windowStatus === 'active' ? 'Open Now' : m.windowStatus === 'upcoming' ? 'Upcoming' : 'Closed'}
                 </span>
-                <span className="font-mono text-xs text-slate-500">
+                <span className="font-mono text-xs text-slate-600">
                   {m.durationMinutes} mins · {m.questionCount} Qs
                 </span>
               </div>
 
-              <h2 className="mt-2 font-display text-lg font-bold text-slate-900 dark:text-white">{m.title}</h2>
+              <h2 className="mt-2 font-display text-base font-bold text-slate-900 dark:text-white">{m.title}</h2>
               <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{m.description}</p>
 
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Opens: {new Date(m.startAt).toLocaleDateString()}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  Closes: {new Date(m.endAt).toLocaleDateString()}
-                </span>
-              </div>
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                Opens: {new Date(m.startAt).toLocaleDateString()} · Closes: {new Date(m.endAt).toLocaleDateString()}
+              </p>
 
-              <p className="mt-2 text-xs font-medium text-blue-700 dark:text-blue-400">
+              <p className="mt-1.5 text-xs font-medium text-[#1D4ED8] dark:text-blue-400">
                 Subjects: {m.subjects.map((s) => s.name).join(', ')}
               </p>
 
-              <div className="mt-5 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {m.sessionId && m.sessionStatus !== 'in_progress' ? (
                   <button
                     type="button"
                     onClick={() => onViewResult(m.sessionId!)}
-                    className="rounded-lg border border-blue-600 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:text-blue-400"
+                    className="min-h-[40px] rounded-md border border-[#1D4ED8] px-4 text-xs font-semibold text-[#1D4ED8] hover:bg-blue-50 dark:text-blue-400"
                   >
-                    View Mock Result
+                    View Result
                   </button>
                 ) : m.windowStatus === 'active' ? (
                   <button
                     type="button"
                     onClick={() => startMock(m.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-md bg-emerald-700 px-4 text-xs font-semibold text-white hover:bg-emerald-800"
                   >
                     <Play className="h-3.5 w-3.5" />
-                    <span>{m.sessionStatus === 'in_progress' ? 'Resume Mock Exam' : 'Start Mock Exam'}</span>
+                    <span>{m.sessionStatus === 'in_progress' ? 'Continue Mock' : 'Start Examination'}</span>
                   </button>
                 ) : m.windowStatus === 'upcoming' && !m.isRegistered ? (
                   <button
                     type="button"
                     onClick={() => registerMock(m.id)}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                    className="min-h-[40px] rounded-md bg-[#0F2447] px-4 text-xs font-semibold text-white hover:bg-[#173566]"
                   >
-                    Register Interest
+                    Register for Mock
                   </button>
                 ) : m.isRegistered ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                    <CheckCircle2 className="h-4 w-4" /> Registered for Mock
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                    <CheckCircle2 className="h-4 w-4" /> Registered
                   </span>
                 ) : null}
               </div>
@@ -741,9 +721,7 @@ export function PastQuestionsView({ onSessionStarted }: { onSessionStarted: (ses
 
   useEffect(() => {
     apiFetch<{ subjects: SubjectItem[] }>('/api/student/subjects')
-      .then((res) => {
-        setSubjects(res.subjects);
-      })
+      .then((res) => setSubjects(res.subjects))
       .catch(() => {});
   }, []);
 
@@ -783,55 +761,52 @@ export function PastQuestionsView({ onSessionStarted }: { onSessionStarted: (ses
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Past & Practice Question Bank</h1>
+          <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">Past Questions</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Browse questions by subject and difficulty. Sample practice items and verified past questions are clearly labeled.
+            Browse questions by subject and reveal answers with explanations.
           </p>
         </div>
         <button
           type="button"
           onClick={startFilteredCbt}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="inline-flex min-h-[42px] items-center gap-1.5 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800"
         >
           <Play className="h-4 w-4" />
-          <span>Practice as Timed CBT</span>
+          <span>Practise as Timed Test</span>
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-3 dark:border-slate-800 dark:bg-slate-900">
+      <div className="grid grid-cols-1 gap-3 rounded-lg border border-slate-300 bg-white p-4 sm:grid-cols-3 dark:border-slate-800 dark:bg-slate-900">
         <select
           value={subjectId}
           onChange={(e) => setSubjectId(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="h-11 rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
         >
           <option value="">All Subjects</option>
           {subjects.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
+            <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
 
         <select
           value={source}
           onChange={(e) => setSource(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="h-11 rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
         >
-          <option value="All">All Sources</option>
-          <option value="sample_practice">Sample Practice Questions</option>
+          <option value="All">All Question Types</option>
+          <option value="sample_practice">Practice Questions</option>
           <option value="verified_past_question">Verified Past Questions</option>
         </select>
 
         <select
           value={difficulty}
           onChange={(e) => setDifficulty(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="h-11 rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
         >
-          <option value="All">All Difficulties</option>
+          <option value="All">All Levels</option>
           <option value="Easy">Easy</option>
           <option value="Medium">Medium</option>
           <option value="Hard">Hard</option>
@@ -839,46 +814,46 @@ export function PastQuestionsView({ onSessionStarted }: { onSessionStarted: (ses
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
-          Loading question bank...
+        <div className="rounded-lg border border-slate-300 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+          Loading questions...
         </div>
       ) : questions.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-lg border border-slate-300 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
           <FileQuestion className="mx-auto mb-2 h-8 w-8 text-slate-400" />
-          No questions match the selected filters.
+          No questions found for these filters.
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           {questions.map((q, idx) => {
             const revealed = Boolean(revealedIds[q.id]);
             return (
-              <div key={q.id} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
-                    #{idx + 1} · {q.subjectName} · {q.topicName} · {q.difficulty} ·{' '}
+              <div key={q.id} className="rounded-lg border border-slate-300 bg-white p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
+                  <span className="text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">
+                    Question {idx + 1} · {q.subjectName} · {q.topicName} ·{' '}
                     {q.questionSource === 'verified_past_question'
-                      ? `Verified Past Question${q.examYear ? ` (${q.examYear})` : ''}`
-                      : 'Sample Practice Question'}
+                      ? `Past Question${q.examYear ? ` (${q.examYear})` : ''}`
+                      : 'Practice Question'}
                   </span>
                   <button
                     type="button"
                     onClick={() => setRevealedIds((p) => ({ ...p, [q.id]: !p[q.id] }))}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-blue-700 dark:text-slate-400"
+                    className="inline-flex min-h-[34px] items-center gap-1 rounded-md border border-slate-300 px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300"
                   >
                     {revealed ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    <span>{revealed ? 'Hide Solution' : 'Reveal Answer'}</span>
+                    <span>{revealed ? 'Hide Answer' : 'Show Answer'}</span>
                   </button>
                 </div>
 
-                <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">{q.questionText}</p>
+                <p className="mt-3 text-sm leading-relaxed font-medium text-slate-900 dark:text-slate-100">{q.questionText}</p>
                 <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {q.options.map((opt) => (
                     <div
                       key={opt.label}
-                      className={`rounded-lg border px-3 py-2 text-xs ${
+                      className={`rounded-md border px-3 py-2 text-xs ${
                         revealed && opt.isCorrect
-                          ? 'border-emerald-500 bg-emerald-50 font-semibold text-emerald-900 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200'
-                          : 'border-slate-200 bg-slate-50/60 text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
+                          ? 'border-emerald-600 bg-emerald-50 font-semibold text-emerald-950 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200'
+                          : 'border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
                       }`}
                     >
                       <span className="font-bold">{opt.label}.</span> {opt.text}
@@ -886,7 +861,7 @@ export function PastQuestionsView({ onSessionStarted }: { onSessionStarted: (ses
                   ))}
                 </div>
                 {revealed && q.explanation && (
-                  <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-700 dark:bg-slate-950 dark:text-slate-300">
+                  <p className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
                     <span className="font-bold">Explanation:</span> {q.explanation}
                   </p>
                 )}
@@ -937,22 +912,22 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 dark:text-white">
-            JAMB UTME Subjects & Combinations ({subjects.length})
+          <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">
+            JAMB Subjects ({subjects.length})
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Explore all {subjects.length || 25} active UTME subjects, syllabus topics, and start quick subject-focused CBT drills.
+            Browse all {subjects.length || 25} subjects or start a quick test on any subject.
           </p>
         </div>
         <input
           type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter subjects by name or code..."
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:w-64 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+          placeholder="Search subjects..."
+          className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm sm:w-64 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
         />
       </div>
 
@@ -962,10 +937,10 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
             key={cat}
             type="button"
             onClick={() => setCategoryFilter(cat)}
-            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
+            className={`min-h-[38px] rounded-md border px-3 text-xs font-semibold whitespace-nowrap ${
               categoryFilter === cat
                 ? 'border-[#0F2447] bg-[#0F2447] text-white dark:border-blue-600 dark:bg-blue-600'
-                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
             }`}
           >
             {cat}
@@ -974,58 +949,57 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
-          Loading JAMB UTME subjects...
+        <div className="rounded-lg border border-slate-300 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+          Loading subjects...
         </div>
       ) : loadError ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-sm text-rose-600">{loadError}</p>
+        <div className="rounded-lg border border-slate-300 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm text-rose-700">{loadError}</p>
           <button
             type="button"
             onClick={loadSubjects}
-            className="mt-3 rounded-lg bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white"
+            className="mt-3 rounded-md bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white"
           >
-            Retry Loading Subjects
+            Try Again
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredSubjects.map((sub) => (
-          <div key={sub.id} className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <div>
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
-                {sub.code} · {sub.isCompulsory ? 'Compulsory' : sub.category} · {sub.questionCount || 0} Qs
-              </p>
-              <h2 className="mt-1 font-display text-base font-bold text-slate-900 dark:text-white">{sub.name}</h2>
-              <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400">{sub.description}</p>
-              {sub.topics && sub.topics.length > 0 && (
-                <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                  Topics: {sub.topics.map((t) => t.name).join(' · ')}
+            <div key={sub.id} className="flex flex-col justify-between rounded-lg border border-slate-300 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <p className="font-mono text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">
+                  {sub.code} · {sub.isCompulsory ? 'Compulsory' : sub.category} · {sub.questionCount || 0} Qs
                 </p>
-              )}
+                <h2 className="mt-1 font-display text-base font-bold text-slate-900 dark:text-white">{sub.name}</h2>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{sub.description}</p>
+                {sub.topics && sub.topics.length > 0 && (
+                  <p className="mt-2.5 text-[11px] text-slate-500 dark:text-slate-400">
+                    Topics: {sub.topics.map((t) => t.name).join(' · ')}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => onLaunchSubject(sub.id)}
+                className="mt-4 min-h-[40px] rounded-md border border-[#1D4ED8] px-3 text-xs font-semibold text-[#1D4ED8] hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40"
+              >
+                Practise {sub.name}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => onLaunchSubject(sub.id)}
-              className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-600 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/50"
-            >
-              <BookOpen className="h-3.5 w-3.5" />
-              <span>Practice {sub.code}</span>
-            </button>
-          </div>
           ))}
         </div>
       )}
 
-      <div>
-        <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white">Approved 4-Subject Faculty Combinations</h2>
-        <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="rounded-lg border border-slate-300 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">Common Course Combinations</h2>
+        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           {combinations.map((c) => (
-            <div key={c.id} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <div key={c.id} className="rounded-md border border-slate-200 p-3.5 dark:border-slate-800">
               <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{c.faculty}</p>
-              <h3 className="mt-1 font-display text-base font-bold text-slate-900 dark:text-white">{c.name}</h3>
-              <p className="mt-1 font-mono text-xs font-bold text-blue-700 dark:text-blue-400">{c.subjectCodes.join(' · ')}</p>
-              <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400">{c.description}</p>
+              <h3 className="mt-0.5 text-sm font-bold text-slate-900 dark:text-white">{c.name}</h3>
+              <p className="mt-0.5 font-mono text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">{c.subjectCodes.join(' · ')}</p>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{c.description}</p>
             </div>
           ))}
         </div>

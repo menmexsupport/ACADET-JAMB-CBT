@@ -115,7 +115,7 @@ export async function resolveActorFromRequest(req: Request): Promise<Authenticat
 export async function requireAnyAuth(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   const token = extractTokenFromRequest(req);
   if (!token) {
-    res.status(401).json({ error: 'Authentication required.' });
+    res.status(401).json({ error: 'Please log in to continue.' });
     return;
   }
 

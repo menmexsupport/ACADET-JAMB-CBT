@@ -1,25 +1,12 @@
 import { FormEvent, useEffect, useState } from 'react';
 import {
-  ArrowRight,
-  Award,
-  BarChart3,
-  BookOpen,
   CheckCircle2,
   ChevronDown,
-  Clock,
-  FileCheck2,
   GraduationCap,
-  Layers,
-  Lock,
-  Mail,
-  MapPin,
   Menu,
-  Phone,
-  ShieldCheck,
   X,
 } from 'lucide-react';
 import { apiFetch, setSessionToken } from '../../lib/api.ts';
-import heroStudentPhoto from '../../assets/images/hero_jamb_student_1795029634215.jpg';
 import { AuthUser, PlatformSettings, SubjectCombinationItem, SubjectItem } from '../../types/index.ts';
 
 export type PublicRoute =
@@ -57,63 +44,24 @@ interface OverviewData {
 
 const FAQ_ITEMS = [
   {
-    q: 'How does Acadet JAMB CBT structure the 4-subject UTME practice?',
-    a: 'Every 4-subject UTME simulation enforces the official JAMB rule: Use of English is compulsory alongside three other approved subjects from your faculty combination.',
+    q: 'How are the four JAMB subjects selected?',
+    a: 'Use of English is compulsory for every candidate. You select three other subjects from the 25 available JAMB subjects or pick one of the preset course combinations.',
   },
   {
-    q: 'What happens if my browser refreshes or my internet drops mid-exam?',
-    a: 'Every answer and mark-for-review flag is saved directly to PostgreSQL as you click. Refreshing or re-opening the session restores your exact progress and remaining server timer.',
+    q: 'What happens if my page refreshes or my connection drops during an examination?',
+    a: 'Every answer you click and every question you mark is saved automatically on the server. When you open your account again, you can continue from where you stopped with your remaining time.',
   },
   {
-    q: 'How are Sample Practice Questions distinguished from Verified Past Questions?',
-    a: 'Each question in the bank carries an explicit source label. Sample Practice Questions are curriculum-aligned drills, while Verified Past Questions display their verified examination year.',
+    q: 'What is the difference between Sample Practice Questions and Past Questions?',
+    a: 'Every question clearly shows its source. Practice questions are curriculum-based exercises, while past questions show their examination year.',
   },
   {
-    q: 'Can I review solutions and explanations after submitting my exam?',
-    a: 'Yes. Immediately upon submission, your attempt is graded on the server with a /400 UTME scaled score, subject breakdown, downloadable PDF report, and question-by-question explanations.',
+    q: 'Can I check correct answers and explanations after submitting?',
+    a: 'Yes. Immediately you submit your examination, you see your score out of 400, your subject-by-subject scores, and the explanation for each question.',
   },
   {
     q: 'How do scheduled Mock Examinations work?',
-    a: 'Administrators schedule official timed mock windows with eligibility criteria. Candidates register ahead of time and launch the mock strictly within the active schedule window.',
-  },
-];
-
-const DEMO_CBT_QUESTIONS = [
-  {
-    subject: 'Use of English',
-    code: 'ENG',
-    question: 'Choose the option that best completes the sentence: Neither the principal nor the teachers _____ aware of the change in timetable.',
-    options: [
-      { label: 'A', text: 'was' },
-      { label: 'B', text: 'were' },
-      { label: 'C', text: 'is' },
-      { label: 'D', text: 'has been' },
-    ],
-    answer: 'B',
-  },
-  {
-    subject: 'Mathematics',
-    code: 'MTH',
-    question: 'If log₁₀(x) = 2, what is the value of x + 15?',
-    options: [
-      { label: 'A', text: '35' },
-      { label: 'B', text: '100' },
-      { label: 'C', text: '115' },
-      { label: 'D', text: '215' },
-    ],
-    answer: 'C',
-  },
-  {
-    subject: 'Physics',
-    code: 'PHY',
-    question: 'A wave of frequency 50 Hz travels with a speed of 300 m/s. Calculate its wavelength.',
-    options: [
-      { label: 'A', text: '6.0 m' },
-      { label: 'B', text: '0.17 m' },
-      { label: 'C', text: '150 m' },
-      { label: 'D', text: '250 m' },
-    ],
-    answer: 'A',
+    a: 'Mock examinations run during scheduled dates set by the examination administrator. Registered students can start the test during the open window.',
   },
 ];
 
@@ -122,13 +70,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewError, setOverviewError] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroImgFailed, setHeroImgFailed] = useState(false);
   const [subjectCategory, setSubjectCategory] = useState<'All' | 'Compulsory' | 'Science' | 'Commercial' | 'Arts'>('All');
-
-  // Interactive Hero CBT Demo state
-  const [demoIdx, setDemoIdx] = useState(0);
-  const [demoAnswers, setDemoAnswers] = useState<Record<number, string>>({});
-  const [demoChecked, setDemoChecked] = useState(false);
 
   // Login state
   const [loginMode, setLoginMode] = useState<'student' | 'admin'>('student');
@@ -171,7 +113,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
     } catch {
       if (retriesLeft > 0) {
         setTimeout(() => {
-          loadOverview(retriesLeft - 1);
+          void loadOverview(retriesLeft - 1);
         }, 1200);
       } else {
         setOverviewError(true);
@@ -181,7 +123,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
   };
 
   useEffect(() => {
-    loadOverview();
+    void loadOverview();
   }, []);
 
   useEffect(() => {
@@ -217,7 +159,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
       if (res.token) setSessionToken(res.token);
       onAuthenticated(res.user);
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : 'Sign in failed.');
+      setAuthError(err instanceof Error ? err.message : 'Unable to log in. Please check your details.');
     } finally {
       setAuthLoading(false);
     }
@@ -238,7 +180,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
       if (res.token) setSessionToken(res.token);
       onAuthenticated(res.user);
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : 'Registration failed.');
+      setAuthError(err instanceof Error ? err.message : 'Could not create account.');
     } finally {
       setAuthLoading(false);
     }
@@ -291,16 +233,15 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
       setContactStatus(res.message);
       setContactForm({ fullName: '', email: '', subject: '', message: '' });
     } catch (err) {
-      setContactStatus(err instanceof Error ? err.message : 'Failed to send inquiry.');
+      setContactStatus(err instanceof Error ? err.message : 'Failed to send message.');
     }
   };
 
-  const siteName = overview?.settings.siteName || 'Acadet JAMB CBT';
   const navLinks: Array<{ label: string; path: PublicRoute }> = [
     { label: 'Home', path: '/' },
     { label: 'Subjects', path: '/subjects' },
     { label: 'How It Works', path: '/how-it-works' },
-    { label: 'Features', path: '/features' },
+    { label: 'FAQ', path: '/faq' },
     { label: 'Contact', path: '/contact' },
   ];
 
@@ -309,36 +250,36 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
     setAuthError(null);
     setAuthSuccess(null);
     onNavigate(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
-      {/* Top Bar Contract: Brand wordmark — Concise single-line nav links — Auth CTAs */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6">
+    <div className="flex min-h-screen flex-col bg-[#F4F6F8] text-slate-900">
+      {/* Compact Application Header */}
+      <header className="sticky top-0 z-40 border-b border-slate-300 bg-white">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <button
             type="button"
             onClick={() => go('/')}
             className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-left"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0F2447] text-white">
-              <GraduationCap className="h-5 w-5" />
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#0F2447] text-white">
+              <GraduationCap className="h-4 w-4" />
             </span>
-            <span className="font-display text-lg font-extrabold tracking-tight text-[#0F2447]">
-              {siteName}
+            <span className="font-display text-base font-bold tracking-tight text-[#0F2447]">
+              Acadet CBT JAMB
             </span>
           </button>
 
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-5 md:flex">
             {navLinks.map((item) => (
               <button
                 key={item.path}
                 type="button"
                 onClick={() => go(item.path)}
-                className={`shrink-0 whitespace-nowrap text-sm font-medium transition-colors ${
+                className={`shrink-0 whitespace-nowrap text-sm font-medium ${
                   route === item.path
-                    ? 'text-blue-700 underline decoration-2 underline-offset-8'
+                    ? 'font-semibold text-[#1D4ED8] underline decoration-2 underline-offset-8'
                     : 'text-slate-600 hover:text-[#0F2447]'
                 }`}
               >
@@ -347,26 +288,26 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
             ))}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => go('/login')}
-              className="hidden shrink-0 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 sm:inline-flex"
+              className="hidden h-9 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white px-3.5 text-sm font-semibold text-slate-800 whitespace-nowrap hover:bg-slate-50 sm:inline-flex"
             >
               Login
             </button>
             <button
               type="button"
               onClick={() => go('/register')}
-              className="shrink-0 whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-[#0F2447] px-3.5 text-sm font-semibold text-white whitespace-nowrap hover:bg-[#173566]"
             >
-              Register
+              Create Account
             </button>
             <button
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label="Toggle navigation menu"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 md:hidden"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -381,8 +322,8 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   key={item.path}
                   type="button"
                   onClick={() => go(item.path)}
-                  className={`rounded-lg px-3 py-2 text-left text-sm font-medium ${
-                    route === item.path ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
+                  className={`min-h-[44px] rounded-md px-3 py-2 text-left text-sm font-medium ${
+                    route === item.path ? 'bg-blue-50 font-semibold text-[#1D4ED8]' : 'text-slate-700'
                   }`}
                 >
                   {item.label}
@@ -391,610 +332,371 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
               <button
                 type="button"
                 onClick={() => go('/about')}
-                className="rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700"
+                className="min-h-[44px] rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700"
               >
-                About Acadet
+                About
               </button>
-              <button
-                type="button"
-                onClick={() => go('/login')}
-                className="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-800"
-              >
-                Login
-              </button>
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
+                <button
+                  type="button"
+                  onClick={() => go('/login')}
+                  className="min-h-[44px] rounded-md border border-slate-300 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-800"
+                >
+                  Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go('/register')}
+                  className="min-h-[44px] rounded-md bg-[#0F2447] px-3 py-2 text-center text-sm font-semibold text-white"
+                >
+                  Create Account
+                </button>
+              </div>
             </div>
           </div>
         )}
       </header>
 
-      {/* Main Content */}
       <main className="flex-1">
         {route === '/' && (
-          <>
-            {/* Standard CBT Portal Hero with Live Interactive CBT Preview */}
-            <section className="bg-[#0B1F3F] text-white">
-              <div className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-10 px-4 py-12 sm:px-6 lg:grid-cols-12 lg:py-16">
-                <div className="flex flex-col justify-center lg:col-span-6">
-                  <p className="text-xs font-semibold tracking-wide text-emerald-400">
-                    Standard JAMB UTME Computer-Based Testing System
-                  </p>
-                  <h1 className="mt-3 max-w-xl font-display text-3xl font-extrabold tracking-tight text-balance sm:text-5xl">
-                    Practice JAMB UTME in a Real CBT Hall
-                  </h1>
-                  <p className="mt-4 max-w-xl text-base leading-relaxed text-blue-100">
-                    Experience the authentic 4-subject UTME workstation with compulsory Use of English, 8-key keyboard navigation, built-in calculator, PostgreSQL auto-save, and instant /400 scoring.
-                  </p>
-
-                  <ul className="mt-6 grid grid-cols-1 gap-2.5 text-sm text-blue-50 sm:grid-cols-2">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                      <span>Use of English + 3 Electives</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                      <span>Server Countdown &amp; Auto-Save</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                      <span>Timed Exam &amp; Study Modes</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                      <span>Subject Analytics &amp; PDF Slip</span>
-                    </li>
-                  </ul>
-
-                  <div className="mt-8 flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => go('/register')}
-                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-bold text-white hover:bg-emerald-500"
+          <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
+            {/* Simple, Direct First Screen */}
+            <section className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="max-w-2xl">
+                  <div className="flex items-center gap-3.5">
+                    {/* Simple JAMB Institutional Emblem */}
+                    <svg
+                      viewBox="0 0 64 64"
+                      className="h-14 w-14 shrink-0"
+                      role="img"
+                      aria-label="JAMB UTME Emblem"
                     >
-                      <span>Start Practising</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => go('/login')}
-                      className="inline-flex items-center gap-2 rounded-lg border border-blue-400/40 bg-white/5 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
-                    >
-                      <span>Candidate Sign In</span>
-                    </button>
-                  </div>
-                </div>
+                      <circle cx="32" cy="32" r="30" fill="#FFFFFF" stroke="#15803D" strokeWidth="2.5" />
+                      <circle cx="32" cy="32" r="24" fill="#F8FAFC" stroke="#0F2447" strokeWidth="1.5" />
+                      {/* Open Book */}
+                      <path
+                        d="M17 24c5-2 10-2 15 1 5-3 10-3 15-1v16c-5-2-10-1-15 2-5-3-10-4-15-2V24z"
+                        fill="#FFFFFF"
+                        stroke="#0F2447"
+                        strokeWidth="2"
+                        strokeLinejoin="round"
+                      />
+                      <line x1="32" y1="25" x2="32" y2="42" stroke="#0F2447" strokeWidth="1.8" />
+                      {/* Torch / Flame Crest */}
+                      <path d="M32 13l2.2 4.5-2.2 2.5-2.2-2.5L32 13z" fill="#15803D" />
+                      {/* JAMB Banner */}
+                      <rect x="18" y="45" width="28" height="9" rx="2" fill="#15803D" />
+                      <text
+                        x="32"
+                        y="51.5"
+                        textAnchor="middle"
+                        fill="#FFFFFF"
+                        fontSize="6.5"
+                        fontWeight="700"
+                        fontFamily="system-ui, sans-serif"
+                        letterSpacing="0.8"
+                      >
+                        JAMB
+                      </text>
+                    </svg>
 
-                {/* Live Interactive Sample CBT Terminal */}
-                <div className="lg:col-span-6">
-                  <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-blue-800 bg-white text-slate-900 shadow-2xl">
-                    {/* CBT Mini Header */}
-                    <div className="flex items-center justify-between bg-[#0F2447] px-4 py-3 text-white">
-                      <div>
-                        <p className="text-xs font-bold">Sample CBT Workstation</p>
-                        <p className="text-[11px] text-blue-200">Interactive UTME Preview · Question {demoIdx + 1} of 3</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 rounded-md border border-blue-700 bg-[#0A1D3D] px-2.5 py-1 font-mono text-xs font-bold tabular-nums">
-                        <Clock className="h-3.5 w-3.5 text-emerald-400" />
-                        <span>01:59:40</span>
-                      </div>
-                    </div>
-
-                    {/* Subject Switcher */}
-                    <div className="flex gap-1 border-b border-slate-200 bg-slate-100 px-3 py-2">
-                      {DEMO_CBT_QUESTIONS.map((q, idx) => (
-                        <button
-                          key={q.code}
-                          type="button"
-                          onClick={() => {
-                            setDemoIdx(idx);
-                            setDemoChecked(false);
-                          }}
-                          className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
-                            demoIdx === idx
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-slate-700 hover:bg-slate-200'
-                          }`}
-                        >
-                          {q.subject}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Active Sample Question */}
-                    <div className="flex flex-1 flex-col justify-between p-5">
-                      <div>
-                        <p className="text-xs font-semibold text-blue-700">
-                          {DEMO_CBT_QUESTIONS[demoIdx].subject} · Sample Practice Question
-                        </p>
-                        <p className="mt-2 text-sm leading-relaxed font-semibold text-slate-900">
-                          {DEMO_CBT_QUESTIONS[demoIdx].question}
-                        </p>
-                        <div className="mt-4 space-y-2">
-                          {DEMO_CBT_QUESTIONS[demoIdx].options.map((opt) => {
-                            const selected = demoAnswers[demoIdx] === opt.label;
-                            const isCorrect = opt.label === DEMO_CBT_QUESTIONS[demoIdx].answer;
-                            let rowCls = 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50';
-                            if (demoChecked && isCorrect) {
-                              rowCls = 'border-emerald-500 bg-emerald-50 text-emerald-950';
-                            } else if (demoChecked && selected && !isCorrect) {
-                              rowCls = 'border-rose-400 bg-rose-50 text-rose-950';
-                            } else if (selected) {
-                              rowCls = 'border-blue-600 bg-blue-50 text-blue-950';
-                            }
-                            return (
-                              <button
-                                key={opt.label}
-                                type="button"
-                                onClick={() => {
-                                  setDemoAnswers((prev) => ({ ...prev, [demoIdx]: opt.label }));
-                                  setDemoChecked(false);
-                                }}
-                                className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-xs font-medium transition-colors ${rowCls}`}
-                              >
-                                <span
-                                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border font-mono text-[11px] font-bold ${
-                                    selected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-slate-50 text-slate-700'
-                                  }`}
-                                >
-                                  {opt.label}
-                                </span>
-                                <span>{opt.text}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="mt-5 flex items-center justify-between border-t border-slate-200 pt-3">
-                        <div className="flex items-center gap-1.5">
-                          {DEMO_CBT_QUESTIONS.map((_, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => {
-                                setDemoIdx(idx);
-                                setDemoChecked(false);
-                              }}
-                              className={`h-7 w-7 rounded font-mono text-xs font-bold ${
-                                demoIdx === idx
-                                  ? 'bg-blue-600 text-white'
-                                  : demoAnswers[idx]
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'bg-slate-200 text-slate-700'
-                              }`}
-                            >
-                              {idx + 1}
-                            </button>
-                          ))}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setDemoChecked(true)}
-                          className="rounded-lg bg-[#0F2447] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-900"
-                        >
-                          {demoChecked
-                            ? demoAnswers[demoIdx] === DEMO_CBT_QUESTIONS[demoIdx].answer
-                              ? 'Correct Answer!'
-                              : `Answer: ${DEMO_CBT_QUESTIONS[demoIdx].answer}`
-                            : 'Check Sample'}
-                        </button>
-                      </div>
+                    <div>
+                      <p className="text-xs font-semibold tracking-wide text-[#1D4ED8]">
+                        UTME COMPUTER-BASED TESTING PORTAL
+                      </p>
+                      <h1 className="mt-1 font-display text-2xl font-bold text-[#0F2447] sm:text-3xl">
+                        Acadet CBT JAMB
+                      </h1>
                     </div>
                   </div>
-                </div>
-              </div>
-            </section>
 
-            {/* Full-Width Platform Statistics Strip */}
-            <section className="border-b border-slate-200 bg-white">
-              <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-slate-200 px-4 sm:px-6 lg:grid-cols-4">
-                <div className="px-4 py-6 text-center">
-                  <p className="font-mono text-2xl font-extrabold text-[#0F2447] tabular-nums sm:text-3xl">
-                    {overview?.stats.subjectsCount ?? 25}
+                  <p className="mt-4 text-base text-slate-700">
+                    Prepare for your JAMB examination with practice tests.
                   </p>
-                  <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">Active UTME Subjects</p>
-                </div>
-                <div className="px-4 py-6 text-center">
-                  <p className="font-mono text-2xl font-extrabold text-blue-700 tabular-nums sm:text-3xl">
-                    {overview?.stats.questionsCount ?? 100}+
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">Curated Question Bank</p>
-                </div>
-                <div className="px-4 py-6 text-center">
-                  <p className="font-mono text-2xl font-extrabold text-emerald-600 tabular-nums sm:text-3xl">
-                    {overview?.stats.studentsCount ?? 0}
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">Registered Candidates</p>
-                </div>
-                <div className="px-4 py-6 text-center">
-                  <p className="font-mono text-2xl font-extrabold text-[#0F2447] tabular-nums sm:text-3xl">
-                    {overview?.stats.completedExamsCount ?? 0}
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">Graded CBT Attempts</p>
-                </div>
-              </div>
-            </section>
 
-            {/* Candidate Readiness Showcase */}
-            <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-              <div className="grid grid-cols-1 items-stretch gap-8 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid-cols-12">
-                <div className="min-h-[260px] bg-slate-100 lg:col-span-5">
-                  {!heroImgFailed ? (
-                    <img
-                      src={heroStudentPhoto}
-                      alt="Nigerian UTME candidate studying with Acadet JAMB CBT"
-                      referrerPolicy="no-referrer"
-                      onError={() => setHeroImgFailed(true)}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full min-h-[260px] flex-col items-center justify-center bg-[#0F2447] p-8 text-center text-white">
-                      <GraduationCap className="h-12 w-12 text-emerald-400" />
-                      <p className="mt-3 font-display text-lg font-bold">Acadet JAMB CBT</p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col justify-center p-6 sm:p-10 lg:col-span-7">
-                  <p className="text-xs font-semibold text-blue-700">Standard UTME Preparation</p>
-                  <h2 className="mt-2 font-display text-2xl font-bold text-[#0F2447] sm:text-3xl">
-                    Transparent Practice &amp; Scheduled Mock Simulations
-                  </h2>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-                    Every session matches official JAMB rules: Use of English is mandatory alongside three electives, answers persist on every click, and server-side grading computes your exact /400 score and per-subject accuracy.
-                  </p>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <button
                       type="button"
-                      onClick={() => go('/register')}
-                      className="rounded-lg bg-[#0F2447] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-900"
+                      onClick={() => go('/login')}
+                      className="inline-flex min-h-[44px] min-w-[140px] items-center justify-center rounded-md bg-[#0F2447] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
                     >
-                      Create Candidate Account
+                      Login
                     </button>
                     <button
                       type="button"
-                      onClick={() => go('/faq')}
-                      className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      onClick={() => go('/register')}
+                      className="inline-flex min-h-[44px] min-w-[160px] items-center justify-center rounded-md bg-[#1D4ED8] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
                     >
-                      Read Candidate FAQ
+                      Create Account
                     </button>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* Available Subjects Showcase */}
-            <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <h2 className="font-display text-2xl font-bold text-[#0F2447] sm:text-3xl">
-                    Official JAMB UTME Subject Catalogue ({overview?.subjects.length ?? 25})
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-                    Use of English is compulsory for all candidates alongside three approved subjects matching your target university course.
-                  </p>
+            {/* Simple Examination Information Section */}
+            <section className="rounded-lg border border-slate-300 bg-white">
+              <div className="border-b border-slate-200 px-6 py-4">
+                <h2 className="font-display text-base font-bold text-[#0F2447]">
+                  Examination Information
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 divide-y divide-slate-200 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+                <div className="space-y-4 p-6">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">1. Subject Combination</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                      Use of English is compulsory for all students. Select three other subjects from{' '}
+                      {overview?.stats.subjectsCount ?? 25} available JAMB subjects to start a full four-subject test.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">2. Practice &amp; Timed Modes</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                      Take a timed examination with an active countdown timer and built-in calculator, or practise at your own pace in Study Mode.
+                    </p>
+                  </div>
                 </div>
+
+                <div className="space-y-4 p-6">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">3. Automatic Answer Saving</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                      Your answers and marked questions save automatically every time you select an option. You can switch freely between your four subjects.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">4. Instant Results &amp; Review</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                      As soon as you submit, view your score out of 400, your breakdown for each subject, and explanations for the correct answers.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-3.5 text-sm">
+                <span className="text-slate-700">
+                  {overview?.stats.subjectsCount ?? 25} JAMB subjects and{' '}
+                  {overview?.stats.questionsCount ?? 100}+ practice questions available.
+                </span>
                 <button
                   type="button"
                   onClick={() => go('/subjects')}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:underline whitespace-nowrap shrink-0"
+                  className="font-semibold text-[#1D4ED8] hover:underline whitespace-nowrap"
                 >
-                  <span>View combinations &amp; details</span>
-                  <ArrowRight className="h-4 w-4" />
+                  View Available Subjects
                 </button>
               </div>
-
-              <div className="mt-6 flex flex-wrap gap-1.5">
-                {(['All', 'Compulsory', 'Science', 'Commercial', 'Arts'] as const).map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setSubjectCategory(cat)}
-                    className={`rounded-lg border px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
-                      subjectCategory === cat
-                        ? 'border-[#0F2447] bg-[#0F2447] text-white'
-                        : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              {overviewLoading && (!overview || overview.subjects.length === 0) ? (
-                <div className="mt-6 rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-                  Loading all 25 JAMB UTME subjects...
-                </div>
-              ) : overviewError && (!overview || overview.subjects.length === 0) ? (
-                <div className="mt-6 rounded-xl border border-slate-200 bg-white p-8 text-center">
-                  <p className="text-sm text-slate-600">Unable to load subjects right now.</p>
-                  <button
-                    type="button"
-                    onClick={() => loadOverview(2)}
-                    className="mt-3 rounded-lg bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white hover:bg-blue-900"
-                  >
-                    Retry Loading Subjects
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {(overview?.subjects || [])
-                    .filter((sub) => subjectCategory === 'All' || sub.category === subjectCategory)
-                    .map((sub) => (
-                    <div
-                      key={sub.id}
-                      className="rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-blue-300"
-                    >
-                      <p className="text-xs font-semibold text-blue-700">
-                        {sub.code} · {sub.isCompulsory ? 'Compulsory' : sub.category}
-                      </p>
-                      <h3 className="mt-1.5 font-display text-base font-bold text-slate-900">{sub.name}</h3>
-                      <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-slate-600">{sub.description}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </section>
-
-            {/* CBT Practice Features & Past Questions Integrity */}
-            <section className="border-y border-slate-200 bg-white py-14">
-              <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                <h2 className="font-display text-2xl font-bold text-[#0F2447] sm:text-3xl">
-                  Built for Authentic UTME Exam Readiness
-                </h2>
-                <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-6">
-                    <Clock className="h-6 w-6 text-blue-700" />
-                    <h3 className="mt-4 font-display text-lg font-bold text-slate-900">Timed 4-Subject CBT Engine</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                      Switch seamlessly between Use of English and your three electives, flag questions for review, use the built-in calculator, and rely on server-authoritative timing.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-6">
-                    <FileCheck2 className="h-6 w-6 text-emerald-600" />
-                    <h3 className="mt-4 font-display text-lg font-bold text-slate-900">Past Questions & Sample Drills</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                      Filter by subject, syllabus topic, year, or difficulty. Sample practice questions and verified past papers are transparently labeled so you always know your source.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-6">
-                    <BarChart3 className="h-6 w-6 text-blue-700" />
-                    <h3 className="mt-4 font-display text-lg font-bold text-slate-900">Subject Performance Analytics</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                      Track your scaled /400 UTME score trajectory, accuracy per subject, and time spent. Download clean PDF performance reports after every attempt.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* How It Works */}
-            <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-              <h2 className="font-display text-2xl font-bold text-[#0F2447] sm:text-3xl">How Acadet JAMB CBT Works</h2>
-              <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                {[
-                  {
-                    step: '01. Create Your Candidate Profile',
-                    desc: 'Register with your intended course, preferred institution, and target JAMB year to receive your unique ACD-JAMB registration code.',
-                  },
-                  {
-                    step: '02. Configure Practice or Join Mocks',
-                    desc: 'Choose a 4-subject UTME simulation, topic-based drill, past question sprint, or active scheduled Mock Examination.',
-                  },
-                  {
-                    step: '03. Review Explanations & Improve',
-                    desc: 'Get instant server-verified grading out of 400, review step-by-step explanations, and download study materials.',
-                  },
-                ].map((item) => (
-                  <div key={item.step} className="rounded-xl border border-slate-200 bg-white p-6">
-                    <h3 className="font-display text-base font-bold text-[#0F2447]">{item.step}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </>
+          </div>
         )}
 
         {route === '/about' && (
-          <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
-            <h1 className="font-display text-3xl font-extrabold text-[#0F2447]">About Acadet JAMB CBT</h1>
-            <p className="mt-4 text-base leading-relaxed text-slate-600">
-              Acadet JAMB CBT is a dedicated Computer-Based Testing platform engineered specifically for Nigerian UTME candidates.
-              Our mission is to eliminate exam-day anxiety by mirroring the real CBT workflow—complete with compulsory Use of English,
-              three-elective subject combinations, keyboard-friendly navigation, built-in calculator, and strict server-side grading integrity.
-            </p>
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <ShieldCheck className="h-6 w-6 text-emerald-600" />
-                <h2 className="mt-3 font-display text-lg font-bold text-slate-900">Academic Integrity</h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  Correct answers and explanations remain strictly locked on the server during active examinations and are never transmitted to the browser until submission.
-                </p>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <Layers className="h-6 w-6 text-blue-700" />
-                <h2 className="mt-3 font-display text-lg font-bold text-slate-900">Source Transparency</h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  We clearly distinguish curated Sample Practice Questions from Verified Past Questions so educators and candidates maintain complete trust in the question bank.
-                </p>
+          <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0F2447]">About Acadet CBT JAMB</h1>
+              <p className="mt-3 text-sm leading-relaxed text-slate-700">
+                Acadet CBT JAMB is an examination practice application built to help secondary school students prepare for the JAMB Unified Tertiary Matriculation Examination (UTME).
+              </p>
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+                  <h2 className="text-sm font-bold text-[#0F2447]">Authentic CBT Format</h2>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Practise with four subjects (Use of English plus three electives), a question number grid, question marking, and an on-screen calculator.
+                  </p>
+                </div>
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+                  <h2 className="text-sm font-bold text-[#0F2447]">Fair Grading &amp; Clear Sources</h2>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Answers stay locked on the server until submission. Every question is clearly marked as either a Practice Question or a Verified Past Question.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
         )}
 
         {route === '/how-it-works' && (
-          <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
-            <h1 className="font-display text-3xl font-extrabold text-[#0F2447]">How It Works</h1>
-            <p className="mt-3 text-base text-slate-600">
-              Go from registration to full UTME exam mastery in four structured steps.
-            </p>
-            <div className="mt-8 space-y-4">
-              {[
-                ['1. Student Registration', 'Create an account with your JAMB examination year, intended course, and preferred university. Receive an instant ACD-JAMB registration number.'],
-                ['2. Subject Combination Selection', 'Pick Use of English plus 3 electives—or load a faculty preset for Medicine, Engineering, Law, Accounting, or Social Sciences.'],
-                ['3. Live CBT Exam Hall', 'Practice under realistic timed conditions with auto-save per click, question palette tracking, mark-for-review, and automatic crash/refresh recovery.'],
-                ['4. Analytics & PDF Reports', 'Review your /400 score, inspect subject strengths, read explanations, and download study PDFs to close weak topics.'],
-              ].map(([title, desc]) => (
-                <div key={title} className="rounded-xl border border-slate-200 bg-white p-6">
-                  <h2 className="font-display text-lg font-bold text-[#0F2447]">{title}</h2>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{desc}</p>
-                </div>
-              ))}
+          <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0F2447]">How It Works</h1>
+              <p className="mt-1 text-sm text-slate-600">
+                Follow these four steps to prepare for your UTME examination.
+              </p>
+              <div className="mt-6 divide-y divide-slate-200 rounded-md border border-slate-200">
+                {[
+                  ['1. Create Your Account', 'Register with your name, email, target year, and intended course to receive your candidate registration number.'],
+                  ['2. Select Your Four Subjects', 'Use of English is included automatically. Pick three other subjects or choose a course combination.'],
+                  ['3. Take Your Practice Test', 'Answer questions, switch between subjects, mark difficult questions for later review, and watch your countdown timer.'],
+                  ['4. Check Your Results', 'Submit to see your total score out of 400, your subject-by-subject scores, and answer explanations.'],
+                ].map(([title, desc]) => (
+                  <div key={title} className="p-4 sm:p-5">
+                    <h2 className="text-sm font-bold text-[#0F2447]">{title}</h2>
+                    <p className="mt-1 text-sm text-slate-600">{desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
         )}
 
         {route === '/subjects' && (
-          <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <h1 className="font-display text-3xl font-extrabold text-[#0F2447]">
-                  Available JAMB UTME Subjects ({overview?.subjects.length ?? 25})
-                </h1>
-                <p className="mt-2 text-base text-slate-600">
-                  All {overview?.subjects.length ?? 25} active JAMB UTME subjects and recommended 4-subject faculty combinations.
-                </p>
+          <section className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
+            <div className="rounded-lg border border-slate-300 bg-white p-6">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <h1 className="font-display text-2xl font-bold text-[#0F2447]">
+                    Available JAMB Subjects ({overview?.subjects.length ?? 25})
+                  </h1>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Use of English is compulsory. Choose three other subjects based on your course.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(['All', 'Compulsory', 'Science', 'Commercial', 'Arts'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSubjectCategory(cat)}
+                      className={`min-h-[38px] rounded-md border px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
+                        subjectCategory === cat
+                          ? 'border-[#0F2447] bg-[#0F2447] text-white'
+                          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {(['All', 'Compulsory', 'Science', 'Commercial', 'Arts'] as const).map((cat) => (
+
+              {overviewLoading && (!overview || overview.subjects.length === 0) ? (
+                <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-600">
+                  Loading subjects...
+                </div>
+              ) : overviewError && (!overview || overview.subjects.length === 0) ? (
+                <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-6 text-center">
+                  <p className="text-sm text-slate-700">Unable to load subjects right now.</p>
                   <button
-                    key={cat}
                     type="button"
-                    onClick={() => setSubjectCategory(cat)}
-                    className={`rounded-lg border px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
-                      subjectCategory === cat
-                        ? 'border-[#0F2447] bg-[#0F2447] text-white'
-                        : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    onClick={() => loadOverview(2)}
+                    className="mt-3 rounded-md bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white"
                   >
-                    {cat}
+                    Try Again
                   </button>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {(overview?.subjects || [])
+                    .filter((s) => subjectCategory === 'All' || s.category === subjectCategory)
+                    .map((s) => (
+                      <div key={s.id} className="rounded-md border border-slate-200 bg-slate-50/50 p-4">
+                        <p className="font-mono text-xs font-semibold text-[#1D4ED8]">
+                          {s.code} · {s.isCompulsory ? 'Compulsory' : s.category}
+                        </p>
+                        <h2 className="mt-1 text-base font-bold text-slate-900">{s.name}</h2>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-600">{s.description}</p>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
-            {overviewLoading && (!overview || overview.subjects.length === 0) ? (
-              <div className="mt-8 rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-                Loading all 25 JAMB UTME subjects...
-              </div>
-            ) : overviewError && (!overview || overview.subjects.length === 0) ? (
-              <div className="mt-8 rounded-xl border border-slate-200 bg-white p-8 text-center">
-                <p className="text-sm text-slate-600">Unable to load subjects right now.</p>
-                <button
-                  type="button"
-                  onClick={() => loadOverview(2)}
-                  className="mt-3 rounded-lg bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white hover:bg-blue-900"
-                >
-                  Retry Loading Subjects
-                </button>
-              </div>
-            ) : (
-              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {(overview?.subjects || [])
-                  .filter((s) => subjectCategory === 'All' || s.category === subjectCategory)
-                  .map((s) => (
-                  <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-5">
-                    <p className="text-xs font-semibold text-blue-700">
-                      {s.code} · {s.isCompulsory ? 'Compulsory' : s.category}
+
+            <div className="rounded-lg border border-slate-300 bg-white p-6">
+              <h2 className="font-display text-lg font-bold text-[#0F2447]">Common Course Combinations</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                {(overview?.combinations || []).map((c) => (
+                  <div key={c.id} className="rounded-md border border-slate-200 p-4">
+                    <p className="text-xs font-semibold text-emerald-700">{c.faculty}</p>
+                    <h3 className="mt-0.5 text-sm font-bold text-slate-900">{c.name}</h3>
+                    <p className="mt-1 font-mono text-xs font-semibold text-[#1D4ED8]">
+                      {c.subjectCodes.join(' · ')}
                     </p>
-                    <h2 className="mt-1 font-display text-lg font-bold text-slate-900">{s.name}</h2>
-                    <p className="mt-2 text-sm text-slate-600">{s.description}</p>
+                    <p className="mt-1 text-xs text-slate-600">{c.description}</p>
                   </div>
                 ))}
               </div>
-            )}
-
-            <h2 className="mt-12 font-display text-2xl font-bold text-[#0F2447]">Official 4-Subject Faculty Combinations</h2>
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-              {(overview?.combinations || []).map((c) => (
-                <div key={c.id} className="rounded-xl border border-slate-200 bg-white p-5">
-                  <p className="text-xs font-semibold text-emerald-700">{c.faculty}</p>
-                  <h3 className="mt-1 font-display text-base font-bold text-slate-900">{c.name}</h3>
-                  <p className="mt-1 font-mono text-xs font-semibold text-blue-700">
-                    {c.subjectCodes.join(' · ')}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-600">{c.description}</p>
-                </div>
-              ))}
             </div>
           </section>
         )}
 
         {route === '/features' && (
-          <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-            <h1 className="font-display text-3xl font-extrabold text-[#0F2447]">Platform Features</h1>
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                ['Server-Authoritative Timer', 'Countdown durations are enforced by PostgreSQL timestamps so refreshing cannot reset exam time.', Clock],
-                ['PostgreSQL Auto-Save', 'Every selected option and flagged question persists immediately to the database.', Lock],
-                ['4-Subject UTME Engine', 'Compulsory Use of English combined with three electives and live subject tab switching.', BookOpen],
-                ['Scheduled Mock Exams', 'Timed national simulations with backend start/end window and year eligibility enforcement.', Award],
-                ['Performance Analytics', 'Visual score trends, subject accuracy charts, and downloadable PDF scorecards.', BarChart3],
-                ['Study Materials Library', 'Subject-organized PDF revision guides, notes, and past paper packs.', FileCheck2],
-              ].map(([title, desc, IconComp]) => {
-                const Icon = IconComp as typeof Clock;
-                return (
-                  <div key={String(title)} className="rounded-xl border border-slate-200 bg-white p-6">
-                    <Icon className="h-6 w-6 text-blue-700" />
-                    <h2 className="mt-3 font-display text-lg font-bold text-slate-900">{String(title)}</h2>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{String(desc)}</p>
+          <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0F2447]">Application Features</h1>
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  ['Timed 4-Subject Tests', 'Practise Use of English and three electives together with a live countdown clock.'],
+                  ['Automatic Saving', 'Your selected answers save immediately so refreshing does not erase your work.'],
+                  ['Question Number Grid', 'See answered, unanswered, and flagged questions at a glance and jump to any number.'],
+                  ['Built-in Calculator', 'Open the CBT calculator directly inside your examination screen whenever needed.'],
+                  ['Detailed Score Breakdown', 'Get your total UTME score out of 400 and individual subject percentages right away.'],
+                  ['Study Materials', 'Download subject notes and revision handouts from your student account.'],
+                ].map(([title, desc]) => (
+                  <div key={title} className="rounded-md border border-slate-200 bg-slate-50/50 p-4">
+                    <h2 className="text-sm font-bold text-[#0F2447]">{title}</h2>
+                    <p className="mt-1 text-sm text-slate-600">{desc}</p>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </section>
         )}
 
         {route === '/faq' && (
-          <section className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-            <h1 className="font-display text-3xl font-extrabold text-[#0F2447]">Frequently Asked Questions</h1>
-            <div className="mt-8 space-y-3">
-              {FAQ_ITEMS.map((item, idx) => (
-                <div key={item.q} className="rounded-xl border border-slate-200 bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-display text-base font-bold text-slate-900"
-                  >
-                    <span>{item.q}</span>
-                    <ChevronDown className={`h-5 w-5 shrink-0 text-slate-500 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
-                  </button>
-                  {openFaq === idx && (
-                    <div className="border-t border-slate-100 px-5 py-4 text-sm leading-relaxed text-slate-600">
-                      {item.a}
-                    </div>
-                  )}
-                </div>
-              ))}
+          <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0F2447]">Frequently Asked Questions</h1>
+              <div className="mt-6 divide-y divide-slate-200 rounded-md border border-slate-200">
+                {FAQ_ITEMS.map((item, idx) => (
+                  <div key={item.q}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                      className="flex min-h-[48px] w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-semibold text-slate-900 hover:bg-slate-50"
+                    >
+                      <span>{item.q}</span>
+                      <ChevronDown
+                        className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${
+                          openFaq === idx ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    {openFaq === idx && (
+                      <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3.5 text-sm leading-relaxed text-slate-700">
+                        {item.a}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
         )}
 
         {route === '/contact' && (
-          <section className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <h1 className="font-display text-3xl font-extrabold text-[#0F2447]">Contact Support</h1>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Have questions about UTME mock schedules, subject combinations, or candidate registration? Reach our team directly.
-              </p>
-              <div className="mt-6 space-y-4 text-sm text-slate-700">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-blue-700" />
-                  <span>{overview?.settings.supportEmail || 'support@acadetjamb.com'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-blue-700" />
-                  <span>{overview?.settings.supportPhone || '+234 800 222 3380'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-4 w-4 text-blue-700" />
-                  <span>Lagos & Abuja, Nigeria</span>
+          <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+            <div className="grid grid-cols-1 gap-6 rounded-lg border border-slate-300 bg-white p-6 sm:p-8 lg:grid-cols-12">
+              <div className="lg:col-span-5">
+                <h1 className="font-display text-2xl font-bold text-[#0F2447]">Contact Support</h1>
+                <p className="mt-2 text-sm text-slate-600">
+                  Send us a message if you need help with your account, subject setup, or mock examination schedule.
+                </p>
+                <div className="mt-5 space-y-2.5 border-t border-slate-200 pt-4 text-sm text-slate-700">
+                  <p>
+                    <span className="font-semibold text-slate-900">Email:</span>{' '}
+                    {overview?.settings.supportEmail || 'support@acadetjamb.com'}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-slate-900">Phone:</span>{' '}
+                    {overview?.settings.supportPhone || '+234 800 222 3380'}
+                  </p>
                 </div>
               </div>
-            </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-7">
-              <form onSubmit={handleContactSubmit} className="space-y-4">
+              <form onSubmit={handleContactSubmit} className="space-y-4 lg:col-span-7">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-700">Full Name</label>
@@ -1002,7 +704,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                       required
                       value={contactForm.fullName}
                       onChange={(e) => setContactForm((f) => ({ ...f, fullName: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                      className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -1012,7 +714,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                       required
                       value={contactForm.email}
                       onChange={(e) => setContactForm((f) => ({ ...f, email: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                      className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1022,7 +724,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     required
                     value={contactForm.subject}
                     onChange={(e) => setContactForm((f) => ({ ...f, subject: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1032,15 +734,17 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     rows={4}
                     value={contactForm.message}
                     onChange={(e) => setContactForm((f) => ({ ...f, message: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                    className="w-full rounded-md border border-slate-300 p-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 {contactStatus && (
-                  <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">{contactStatus}</p>
+                  <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+                    {contactStatus}
+                  </p>
                 )}
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                  className="min-h-[44px] rounded-md bg-[#0F2447] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
                 >
                   Send Message
                 </button>
@@ -1050,20 +754,20 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
         )}
 
         {route === '/login' && (
-          <section className="mx-auto max-w-md px-4 py-14">
-            <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs">
-              <div className="mb-6 flex rounded-lg bg-slate-100 p-1">
+          <section className="mx-auto max-w-md px-4 py-10">
+            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-7">
+              <div className="mb-5 grid grid-cols-2 gap-1 rounded-md border border-slate-200 bg-slate-100 p-1">
                 <button
                   type="button"
                   onClick={() => {
                     setLoginMode('student');
                     setAuthError(null);
                   }}
-                  className={`flex-1 rounded-md py-2 text-xs font-semibold transition-colors ${
-                    loginMode === 'student' ? 'bg-white text-[#0F2447] shadow-xs' : 'text-slate-600'
+                  className={`min-h-[38px] rounded-sm text-xs font-semibold ${
+                    loginMode === 'student' ? 'bg-white text-[#0F2447]' : 'text-slate-600'
                   }`}
                 >
-                  Student Portal
+                  Student Login
                 </button>
                 <button
                   type="button"
@@ -1071,34 +775,34 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     setLoginMode('admin');
                     setAuthError(null);
                   }}
-                  className={`flex-1 rounded-md py-2 text-xs font-semibold transition-colors ${
-                    loginMode === 'admin' ? 'bg-white text-[#0F2447] shadow-xs' : 'text-slate-600'
+                  className={`min-h-[38px] rounded-sm text-xs font-semibold ${
+                    loginMode === 'admin' ? 'bg-white text-[#0F2447]' : 'text-slate-600'
                   }`}
                 >
                   Administrator
                 </button>
               </div>
 
-              <h1 className="font-display text-2xl font-bold text-[#0F2447]">
-                {loginMode === 'admin' ? 'Administrator Sign In' : 'Student Sign In'}
+              <h1 className="font-display text-xl font-bold text-[#0F2447]">
+                {loginMode === 'admin' ? 'Administrator Login' : 'Student Login'}
               </h1>
               <p className="mt-1 text-sm text-slate-600">
                 {loginMode === 'admin'
-                  ? 'Access the Acadet JAMB CBT administrative console.'
-                  : 'Sign in with your email, username, or ACD-JAMB registration number.'}
+                  ? 'Log in to manage questions, subjects, and student records.'
+                  : 'Log in with your email, username, or registration number.'}
               </p>
 
-              <form onSubmit={handleLoginSubmit} className="mt-6 space-y-4">
+              <form onSubmit={handleLoginSubmit} className="mt-5 space-y-4">
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-slate-700">
-                    {loginMode === 'admin' ? 'Admin Email or Username' : 'Email, Username, or Registration No.'}
+                    {loginMode === 'admin' ? 'Email or Username' : 'Email, Username, or Registration No.'}
                   </label>
                   <input
                     required
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder={loginMode === 'admin' ? 'admin@acadetjamb.com' : 'adewale@acadetjamb.com'}
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    placeholder={loginMode === 'admin' ? 'Enter admin email or username' : 'Enter email or registration number'}
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1109,12 +813,12 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
 
                 {authError && (
-                  <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-800">
+                  <p className="rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-800">
                     {authError}
                   </p>
                 )}
@@ -1122,62 +826,43 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                  className="min-h-[44px] w-full rounded-md bg-[#0F2447] py-2.5 text-sm font-semibold text-white hover:bg-[#173566] disabled:opacity-60"
                 >
-                  {authLoading ? 'Signing in...' : 'Sign In'}
+                  {authLoading ? 'Logging in...' : 'Login'}
                 </button>
               </form>
 
               {loginMode === 'student' && (
-                <>
-                  <div className="mt-5 flex items-center justify-between text-xs">
-                    <button type="button" onClick={() => go('/forgot-password')} className="font-semibold text-blue-700 hover:underline">
-                      Forgot password?
-                    </button>
-                    <button type="button" onClick={() => go('/register')} className="font-semibold text-emerald-700 hover:underline">
-                      Create student account
-                    </button>
-                  </div>
-
-                  <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-                    <div className="flex items-center justify-between gap-2">
-                      <span>Starter Student Demo</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIdentifier('adewale@acadetjamb.com');
-                          setPassword('Student@2026');
-                          setAuthError(null);
-                        }}
-                        className="font-semibold text-blue-700 hover:underline"
-                      >
-                        Fill Credentials
-                      </button>
-                    </div>
-                  </div>
-                </>
+                <div className="mt-5 flex items-center justify-between border-t border-slate-200 pt-4 text-xs">
+                  <button type="button" onClick={() => go('/forgot-password')} className="font-semibold text-[#1D4ED8] hover:underline">
+                    Forgot password?
+                  </button>
+                  <button type="button" onClick={() => go('/register')} className="font-semibold text-[#0F2447] hover:underline">
+                    Create Account
+                  </button>
+                </div>
               )}
             </div>
           </section>
         )}
 
         {route === '/register' && (
-          <section className="mx-auto max-w-2xl px-4 py-12">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
-              <h1 className="font-display text-2xl font-bold text-[#0F2447]">Student UTME Registration</h1>
+          <section className="mx-auto max-w-2xl px-4 py-8">
+            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-7">
+              <h1 className="font-display text-xl font-bold text-[#0F2447]">Create Student Account</h1>
               <p className="mt-1 text-sm text-slate-600">
-                Create your candidate profile to receive a unique Acadet JAMB Registration Number.
+                Fill in your details below to create your Acadet CBT JAMB account.
               </p>
 
-              <form onSubmit={handleRegisterSubmit} className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <form onSubmit={handleRegisterSubmit} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <label className="mb-1 block text-xs font-semibold text-slate-700">Full Name</label>
                   <input
                     required
                     value={regForm.fullName}
                     onChange={(e) => setRegForm((f) => ({ ...f, fullName: e.target.value }))}
-                    placeholder="e.g. Adewale Ogunleye"
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    placeholder="Enter your full name"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1187,7 +872,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     required
                     value={regForm.email}
                     onChange={(e) => setRegForm((f) => ({ ...f, email: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1196,8 +881,8 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     required
                     value={regForm.username}
                     onChange={(e) => setRegForm((f) => ({ ...f, username: e.target.value }))}
-                    placeholder="letters, numbers, underscore"
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    placeholder="Choose a username"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1207,7 +892,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     value={regForm.phoneNumber}
                     onChange={(e) => setRegForm((f) => ({ ...f, phoneNumber: e.target.value }))}
                     placeholder="08012345678"
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1215,7 +900,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   <select
                     value={regForm.jambYear}
                     onChange={(e) => setRegForm((f) => ({ ...f, jambYear: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   >
                     <option value="2026">2026 UTME</option>
                     <option value="2027">2027 UTME</option>
@@ -1223,13 +908,13 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Intended Course of Study</label>
+                  <label className="mb-1 block text-xs font-semibold text-slate-700">Intended Course</label>
                   <input
                     required
                     value={regForm.intendedCourse}
                     onChange={(e) => setRegForm((f) => ({ ...f, intendedCourse: e.target.value }))}
                     placeholder="e.g. Medicine & Surgery"
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1239,23 +924,23 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     value={regForm.preferredInstitution}
                     onChange={(e) => setRegForm((f) => ({ ...f, preferredInstitution: e.target.value }))}
                     placeholder="e.g. University of Ibadan"
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Password (min 8 characters)</label>
+                  <label className="mb-1 block text-xs font-semibold text-slate-700">Password (minimum 8 characters)</label>
                   <input
                     type="password"
                     required
                     minLength={8}
                     value={regForm.password}
                     onChange={(e) => setRegForm((f) => ({ ...f, password: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                   />
                 </div>
 
                 {authError && (
-                  <div className="sm:col-span-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-800">
+                  <div className="sm:col-span-2 rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-800">
                     {authError}
                   </div>
                 )}
@@ -1264,17 +949,17 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   <button
                     type="submit"
                     disabled={authLoading}
-                    className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+                    className="min-h-[44px] w-full rounded-md bg-[#1D4ED8] py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
                   >
-                    {authLoading ? 'Creating Candidate Account...' : 'Create Student Account'}
+                    {authLoading ? 'Creating Account...' : 'Create Account'}
                   </button>
                 </div>
               </form>
 
-              <p className="mt-5 text-center text-xs text-slate-600">
-                Already registered?{' '}
-                <button type="button" onClick={() => go('/login')} className="font-semibold text-blue-700 hover:underline">
-                  Sign in here
+              <p className="mt-5 border-t border-slate-200 pt-4 text-center text-xs text-slate-600">
+                Already have an account?{' '}
+                <button type="button" onClick={() => go('/login')} className="font-semibold text-[#1D4ED8] hover:underline">
+                  Login here
                 </button>
               </p>
             </div>
@@ -1282,47 +967,47 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
         )}
 
         {route === '/forgot-password' && (
-          <section className="mx-auto max-w-md px-4 py-14">
-            <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs">
-              <h1 className="font-display text-xl font-bold text-[#0F2447]">Reset Forgotten Password</h1>
-              <p className="mt-1 text-sm text-slate-600">Enter your registered email to receive a password recovery link.</p>
+          <section className="mx-auto max-w-md px-4 py-10">
+            <div className="rounded-lg border border-slate-300 bg-white p-6">
+              <h1 className="font-display text-xl font-bold text-[#0F2447]">Reset Password</h1>
+              <p className="mt-1 text-sm text-slate-600">Enter your email address to receive a password reset link.</p>
               <form onSubmit={handleForgotSubmit} className="mt-5 space-y-4">
                 <input
                   type="email"
                   required
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
-                  placeholder="student@example.com"
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                  placeholder="Enter your email address"
+                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
                 />
-                {authSuccess && <p className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800">{authSuccess}</p>}
-                {authError && <p className="rounded-lg bg-rose-50 p-3 text-xs text-rose-800">{authError}</p>}
+                {authSuccess && <p className="rounded-md bg-emerald-50 p-3 text-xs text-emerald-800">{authSuccess}</p>}
+                {authError && <p className="rounded-md bg-rose-50 p-3 text-xs text-rose-800">{authError}</p>}
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                  className="min-h-[44px] w-full rounded-md bg-[#0F2447] py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
                 >
-                  Send Recovery Link
+                  Send Reset Link
                 </button>
               </form>
-              <button type="button" onClick={() => go('/login')} className="mt-4 text-xs font-semibold text-blue-700 hover:underline">
-                Back to Sign In
+              <button type="button" onClick={() => go('/login')} className="mt-4 text-xs font-semibold text-[#1D4ED8] hover:underline">
+                Back to Login
               </button>
             </div>
           </section>
         )}
 
         {route === '/reset-password' && (
-          <section className="mx-auto max-w-md px-4 py-14">
-            <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs">
-              <h1 className="font-display text-xl font-bold text-[#0F2447]">Set New Password</h1>
+          <section className="mx-auto max-w-md px-4 py-10">
+            <div className="rounded-lg border border-slate-300 bg-white p-6">
+              <h1 className="font-display text-xl font-bold text-[#0F2447]">Choose a New Password</h1>
               <form onSubmit={handleResetSubmit} className="mt-5 space-y-4">
                 <input
                   required
                   value={resetToken}
                   onChange={(e) => setResetToken(e.target.value)}
-                  placeholder="Reset token"
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm"
+                  placeholder="Reset code"
+                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm"
                 />
                 <input
                   type="password"
@@ -1330,13 +1015,13 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   minLength={8}
                   value={resetNewPassword}
                   onChange={(e) => setResetNewPassword(e.target.value)}
-                  placeholder="New password (min 8 chars)"
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm"
+                  placeholder="New password (minimum 8 characters)"
+                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm"
                 />
-                {authSuccess && <p className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800">{authSuccess}</p>}
-                {authError && <p className="rounded-lg bg-rose-50 p-3 text-xs text-rose-800">{authError}</p>}
-                <button type="submit" className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white">
-                  Update Password
+                {authSuccess && <p className="rounded-md bg-emerald-50 p-3 text-xs text-emerald-800">{authSuccess}</p>}
+                {authError && <p className="rounded-md bg-rose-50 p-3 text-xs text-rose-800">{authError}</p>}
+                <button type="submit" className="min-h-[44px] w-full rounded-md bg-[#0F2447] py-2.5 text-sm font-semibold text-white">
+                  Save New Password
                 </button>
               </form>
             </div>
@@ -1344,15 +1029,15 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
         )}
 
         {route === '/verify-email' && (
-          <section className="mx-auto max-w-md px-4 py-16 text-center">
-            <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs">
-              <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
+          <section className="mx-auto max-w-md px-4 py-12 text-center">
+            <div className="rounded-lg border border-slate-300 bg-white p-6">
+              <CheckCircle2 className="mx-auto h-9 w-9 text-emerald-700" />
               <h1 className="mt-3 font-display text-xl font-bold text-[#0F2447]">Email Verification</h1>
-              <p className="mt-2 text-sm text-slate-600">{verifyStatus || 'Processing verification token...'}</p>
+              <p className="mt-2 text-sm text-slate-600">{verifyStatus || 'Checking verification link...'}</p>
               <button
                 type="button"
                 onClick={() => go('/login')}
-                className="mt-5 rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white"
+                className="mt-5 min-h-[44px] rounded-md bg-[#0F2447] px-5 py-2 text-sm font-semibold text-white"
               >
                 Continue to Login
               </button>
@@ -1361,37 +1046,17 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-[#0F2447] text-blue-100">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
-          <div className="md:col-span-2">
-            <p className="font-display text-lg font-extrabold text-white">{siteName}</p>
-            <p className="mt-2 max-w-md text-xs leading-relaxed text-blue-200">
-              {overview?.settings.tagline || 'Prepare, Practice and Pass JAMB UTME with Confidence.'}
-            </p>
+      <footer className="border-t border-slate-300 bg-white text-slate-600">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 text-xs sm:px-6">
+          <p className="font-semibold text-[#0F2447]">Acadet CBT JAMB</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <button type="button" onClick={() => go('/about')} className="hover:text-[#0F2447]">About</button>
+            <button type="button" onClick={() => go('/subjects')} className="hover:text-[#0F2447]">Subjects</button>
+            <button type="button" onClick={() => go('/how-it-works')} className="hover:text-[#0F2447]">How It Works</button>
+            <button type="button" onClick={() => go('/faq')} className="hover:text-[#0F2447]">FAQ</button>
+            <button type="button" onClick={() => go('/contact')} className="hover:text-[#0F2447]">Contact</button>
           </div>
-          <div>
-            <p className="text-xs font-bold text-white">Platform</p>
-            <div className="mt-3 flex flex-col gap-2 text-xs text-blue-200">
-              <button type="button" onClick={() => go('/about')} className="text-left hover:text-white">About Acadet</button>
-              <button type="button" onClick={() => go('/subjects')} className="text-left hover:text-white">JAMB Subjects</button>
-              <button type="button" onClick={() => go('/how-it-works')} className="text-left hover:text-white">How It Works</button>
-              <button type="button" onClick={() => go('/faq')} className="text-left hover:text-white">FAQ</button>
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-white">Support</p>
-            <div className="mt-3 space-y-1.5 text-xs text-blue-200">
-              <p>{overview?.settings.supportEmail || 'support@acadetjamb.com'}</p>
-              <p>{overview?.settings.supportPhone || '+234 800 222 3380'}</p>
-              <button type="button" onClick={() => go('/contact')} className="font-semibold text-emerald-400 hover:underline">
-                Contact Us
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-blue-900/70 px-4 py-4 text-center text-xs text-blue-300">
-          © {new Date().getFullYear()} Acadet JAMB CBT. Dedicated UTME Examination Practice Platform.
+          <p>© {new Date().getFullYear()} Acadet CBT JAMB</p>
         </div>
       </footer>
     </div>
