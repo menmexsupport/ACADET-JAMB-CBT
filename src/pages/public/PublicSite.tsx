@@ -2,10 +2,12 @@ import { FormEvent, useEffect, useState } from 'react';
 import {
   CheckCircle2,
   ChevronDown,
+  Eye,
   GraduationCap,
   Menu,
   X,
 } from 'lucide-react';
+import SampleCbtPreview from '../../components/exam/SampleCbtPreview.tsx';
 import { apiFetch, setSessionToken } from '../../lib/api.ts';
 import { AuthUser, PlatformSettings, SubjectCombinationItem, SubjectItem } from '../../types/index.ts';
 
@@ -70,6 +72,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewError, setOverviewError] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSampleCbt, setShowSampleCbt] = useState(false);
   const [subjectCategory, setSubjectCategory] = useState<'All' | 'Compulsory' | 'Science' | 'Commercial' | 'Arts'>('All');
 
   // Login state
@@ -253,10 +256,14 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
     window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
+  if (showSampleCbt) {
+    return <SampleCbtPreview onClose={() => setShowSampleCbt(false)} />;
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F6F8] text-slate-900">
+    <div className="flex min-h-screen flex-col bg-[#F4F6F9] text-[#0F172A]">
       {/* Compact Application Header */}
-      <header className="sticky top-0 z-40 border-b border-slate-300 bg-white">
+      <header className="sticky top-0 z-40 border-b border-[#E2E8F0] bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <button
             type="button"
@@ -419,16 +426,24 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     <button
                       type="button"
                       onClick={() => go('/login')}
-                      className="inline-flex min-h-[44px] min-w-[140px] items-center justify-center rounded-md bg-[#0F2447] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
+                      className="inline-flex min-h-[44px] min-w-[130px] items-center justify-center rounded-[10px] bg-[#0F2447] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
                     >
                       Login
                     </button>
                     <button
                       type="button"
                       onClick={() => go('/register')}
-                      className="inline-flex min-h-[44px] min-w-[160px] items-center justify-center rounded-md bg-[#1D4ED8] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+                      className="inline-flex min-h-[44px] min-w-[150px] items-center justify-center rounded-[10px] bg-[#1D4ED8] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
                     >
                       Create Account
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSampleCbt(true)}
+                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] hover:bg-[#F8FAFC]"
+                    >
+                      <Eye className="h-4 w-4 text-[#1D4ED8]" />
+                      <span>Preview CBT Screen</span>
                     </button>
                   </div>
                 </div>

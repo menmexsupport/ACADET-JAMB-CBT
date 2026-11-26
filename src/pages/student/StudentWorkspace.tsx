@@ -6,8 +6,10 @@ import {
   Bell,
   BookOpen,
   CheckCircle2,
+  ChevronRight,
   ClipboardCheck,
   Download,
+  Eye,
   FileQuestion,
   FileText,
   GraduationCap,
@@ -22,6 +24,7 @@ import {
   User as UserIcon,
   X,
 } from 'lucide-react';
+import SampleCbtPreview, { SampleSubject } from '../../components/exam/SampleCbtPreview.tsx';
 import { apiFetch, setSessionToken } from '../../lib/api.ts';
 import { AuthUser, ExamResultItem, SubjectItem, UserPreferences } from '../../types/index.ts';
 import {
@@ -32,6 +35,13 @@ import {
   SubjectsView,
 } from './StudentExamLaunchers.tsx';
 import { AnalyticsView, ResultsView } from './StudentResultsAndAnalytics.tsx';
+
+const DEFAULT_FOUR_SUBJECTS: SampleSubject[] = [
+  { code: 'ENG', name: 'Use of English' },
+  { code: 'MTH', name: 'Mathematics' },
+  { code: 'PHY', name: 'Physics' },
+  { code: 'CHM', name: 'Chemistry' },
+];
 
 export type StudentTab =
   | 'dashboard'
@@ -108,8 +118,21 @@ export default function StudentWorkspace({
 }: StudentWorkspaceProps) {
   const [tab, setTab] = useState<StudentTab>(initialTab);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [showSampleCbt, setShowSampleCbt] = useState(false);
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [resultSessionToOpen, setResultSessionToOpen] = useState<string | null>(initialResultSessionId);
+  const [selectedFourSubjects, setSelectedFourSubjects] = useState<SampleSubject[]>(() => {
+    try {
+      const raw = localStorage.getItem('acadet_selected_utme_subjects');
+      if (raw) {
+        const parsed = JSON.parse(raw) as SampleSubject[];
+        if (Array.isArray(parsed) && parsed.length === 4) return parsed;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return DEFAULT_FOUR_SUBJECTS;
+  });
 
   useEffect(() => {
     setTab(initialTab);
@@ -294,8 +317,19 @@ export default function StudentWorkspace({
     setMobileNavOpen(false);
   };
 
+  if (showSampleCbt) {
+    return (
+      <SampleCbtPreview
+        candidateName={user.fullName}
+        registrationNumber={user.registrationNumber}
+        selectedSubjects={selectedFourSubjects}
+        onClose={() => setShowSampleCbt(false)}
+      />
+    );
+  }
+
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen bg-[#F4F6F9] text-[#0F172A] dark:bg-slate-950 dark:text-slate-100">
       {/* Desktop Navigation Sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-800 bg-[#0F2447] text-blue-100 lg:flex">
         <div className="flex h-14 items-center gap-2.5 border-b border-blue-900/70 px-4">
@@ -418,23 +452,23 @@ export default function StudentWorkspace({
       {/* Main Content Shell */}
       <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
         {/* Compact Top Bar (52px mobile / 56px desktop) */}
-        <header className="sticky top-0 z-30 flex h-[52px] items-center justify-between border-b border-slate-300 bg-white px-3 sm:px-6 lg:h-14 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex min-w-0 items-center gap-2">
+        <header className="sticky top-0 z-30 flex h-[52px] items-center justify-between border-b border-[#E2E8F0] bg-white px-4 sm:px-6 lg:h-14 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex min-w-0 items-center gap-2.5">
             {tab !== 'dashboard' ? (
               <button
                 type="button"
                 onClick={() => selectTab('dashboard')}
                 aria-label="Back to Home"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 lg:hidden dark:text-slate-300 dark:hover:bg-slate-800"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#0F172A] hover:bg-[#F8FAFC] lg:hidden dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
             ) : (
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#0F2447] text-white lg:hidden">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0F2447] text-white lg:hidden">
                 <GraduationCap className="h-4 w-4" />
               </span>
             )}
-            <h2 className="truncate font-display text-base font-bold text-[#0F2447] dark:text-white">
+            <h2 className="truncate font-display text-base font-bold text-[#0F172A] dark:text-white">
               {tab === 'dashboard' ? (
                 <>
                   <span className="lg:hidden">Acadet CBT</span>
@@ -451,11 +485,11 @@ export default function StudentWorkspace({
               type="button"
               onClick={() => selectTab('notifications')}
               aria-label="Messages"
-              className="relative flex h-11 w-11 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="relative flex h-11 w-11 items-center justify-center rounded-lg text-[#475569] hover:bg-[#F8FAFC] dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <Bell className="h-5 w-5 lg:h-4 lg:w-4" />
               {(dashboard?.stats.unreadNotificationsCount || 0) > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-sm bg-rose-700 px-1 font-mono text-[10px] font-bold text-white tabular-nums">
+                <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-sm bg-[#B45309] px-1 font-mono text-[10px] font-bold text-white tabular-nums">
                   {dashboard?.stats.unreadNotificationsCount}
                 </span>
               )}
@@ -465,52 +499,96 @@ export default function StudentWorkspace({
               type="button"
               onClick={() => selectTab('profile')}
               aria-label="Profile"
-              className="flex h-11 items-center gap-2 rounded-md border border-slate-300 px-2 text-left hover:bg-slate-50 sm:px-2.5 dark:border-slate-700 dark:hover:bg-slate-800"
+              className="flex h-11 items-center gap-2 rounded-lg border border-[#E2E8F0] px-2 text-left hover:bg-[#F8FAFC] sm:px-2.5 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               <div className="hidden text-right sm:block">
-                <p className="font-mono text-xs font-bold text-[#0F2447] dark:text-white">
+                <p className="font-mono text-xs font-bold text-[#0F172A] tabular-nums dark:text-white">
                   {user.registrationNumber}
                 </p>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400">{user.fullName}</p>
+                <p className="text-[11px] text-[#475569] dark:text-slate-400">{user.fullName}</p>
               </div>
-              <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#0F2447] text-xs font-bold text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#0F2447] text-xs font-bold text-white">
                 {user.fullName.charAt(0).toUpperCase()}
               </span>
             </button>
           </div>
         </header>
 
-        <div className="mx-auto w-full max-w-6xl flex-1 p-4 sm:p-6">
+        <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-4 sm:px-6 sm:py-6">
           {tab === 'dashboard' && (
-            <div className="space-y-5">
-              {/* Candidate Header Card */}
-              <div className="rounded-lg border border-slate-300 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">
-                      Welcome, {user.fullName}
+            <div className="space-y-3.5 sm:space-y-5">
+              {/* Candidate Identity Card */}
+              <section className="rounded-[14px] border border-[#E2E8F0] bg-white p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold tracking-wide text-[#475569] uppercase dark:text-slate-400">
+                      {user.jambYear} UTME · {user.intendedCourse || 'General Candidate'}
+                    </p>
+                    <h1 className="mt-1 font-display text-lg font-bold text-[#0F172A] sm:text-xl dark:text-white">
+                      {user.fullName}
                     </h1>
-                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                      Registration No: <span className="font-mono font-semibold text-slate-900 dark:text-white">{user.registrationNumber}</span> ·{' '}
-                      {user.jambYear} UTME · {user.intendedCourse || 'Candidate'}
+                    <p className="mt-0.5 font-mono text-xs font-semibold text-[#475569] tabular-nums dark:text-slate-400">
+                      Reg No: <span className="text-[#0F172A] dark:text-white">{user.registrationNumber}</span>
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => selectTab('start-cbt')}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-[#1D4ED8] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
-                  >
-                    <Play className="h-4 w-4" />
-                    <span>Start Examination</span>
-                  </button>
+
+                  <div className="flex flex-col gap-2 sm:shrink-0 sm:flex-row sm:items-center">
+                    <button
+                      type="button"
+                      onClick={() => selectTab('start-cbt')}
+                      className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#1D4ED8] px-5 text-sm font-semibold text-white hover:bg-blue-800 sm:w-auto"
+                    >
+                      <Play className="h-4 w-4" />
+                      <span>Start Examination</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSampleCbt(true)}
+                      className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-[10px] border border-[#E2E8F0] bg-white px-4 text-sm font-semibold text-[#0F172A] hover:bg-[#F8FAFC] sm:w-auto dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
+                    >
+                      <Eye className="h-4 w-4 text-[#1D4ED8]" />
+                      <span>Preview CBT Screen</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+
+                {/* Selected 4 UTME Subjects */}
+                <div className="mt-4 border-t border-[#E2E8F0] pt-3.5 dark:border-slate-800">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-[#475569] dark:text-slate-400">
+                      Selected 4 UTME Subjects
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => selectTab('start-cbt')}
+                      className="text-xs font-semibold text-[#1D4ED8] hover:underline dark:text-blue-400"
+                    >
+                      Change subjects
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {selectedFourSubjects.map((sub, idx) => (
+                      <div
+                        key={sub.code}
+                        className="flex min-h-[38px] items-center justify-between gap-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1.5 dark:border-slate-800 dark:bg-slate-950"
+                      >
+                        <span className="truncate text-xs font-semibold text-[#0F172A] dark:text-slate-200">
+                          {sub.name}
+                        </span>
+                        <span className="shrink-0 font-mono text-[10px] font-bold text-[#1D4ED8] dark:text-blue-400">
+                          {idx === 0 ? 'CORE' : sub.code}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
 
               {/* Continue Active Test Notice */}
               {dashboard?.activeSession && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-400 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/50">
+                <section className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/50">
                   <div>
-                    <p className="text-sm font-bold text-amber-950 dark:text-amber-200">
+                    <p className="text-sm font-bold text-[#B45309] dark:text-amber-200">
                       Unfinished Examination: {dashboard.activeSession.examTitle}
                     </p>
                     <p className="text-xs text-amber-900 dark:text-amber-300">
@@ -520,80 +598,117 @@ export default function StudentWorkspace({
                   <button
                     type="button"
                     onClick={() => onEnterExam(dashboard.activeSession!.id)}
-                    className="min-h-[40px] rounded-md bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700"
+                    className="min-h-[44px] w-full rounded-[10px] bg-[#B45309] px-4 py-2 text-xs font-bold text-white hover:bg-amber-800 sm:w-auto"
                   >
                     Continue Examination
                   </button>
-                </div>
+                </section>
               )}
 
-              {/* Summary Metrics Strip */}
-              <div className="grid grid-cols-2 divide-y divide-slate-200 rounded-lg border border-slate-300 bg-white sm:grid-cols-4 sm:divide-x sm:divide-y-0 dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
-                <div className="p-4">
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Tests Taken</p>
-                  <p className="mt-1 font-mono text-2xl font-bold text-[#0F2447] tabular-nums dark:text-white">
+              {/* Compact 2x2 UTME Metrics Grid (4-col desktop) */}
+              <section
+                aria-label="UTME performance summary"
+                className="grid grid-cols-2 overflow-hidden rounded-[14px] border border-[#E2E8F0] bg-white sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="border-r border-b border-[#E2E8F0] p-4 sm:border-b-0 dark:border-slate-800">
+                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Tests Taken</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-[#0F172A] tabular-nums dark:text-white">
                     {dashboard?.stats.totalAttempted ?? 0}
                   </p>
+                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">Completed exams</p>
                 </div>
-                <div className="p-4">
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Average Score</p>
+
+                <div className="border-b border-[#E2E8F0] p-4 sm:border-r sm:border-b-0 dark:border-slate-800">
+                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Average Score</p>
                   <p className="mt-1 font-mono text-2xl font-bold text-[#1D4ED8] tabular-nums dark:text-blue-400">
                     {dashboard?.stats.averagePercentage ?? 0}%
                   </p>
+                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">Overall accuracy</p>
                 </div>
-                <div className="p-4">
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Highest UTME Score</p>
-                  <p className="mt-1 font-mono text-2xl font-bold text-emerald-700 tabular-nums dark:text-emerald-400">
+
+                <div className="border-r border-[#E2E8F0] p-4 dark:border-slate-800">
+                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Highest UTME Score</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-[#15803D] tabular-nums dark:text-emerald-400">
                     {dashboard?.stats.highestScoreOutOf400 ?? 0}/400
                   </p>
+                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">UTME 400 scale</p>
                 </div>
+
                 <div className="p-4">
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Overall Progress</p>
-                  <p className="mt-1 font-mono text-2xl font-bold text-[#0F2447] tabular-nums dark:text-white">
+                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Overall Progress</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-[#15803D] tabular-nums dark:text-emerald-400">
                     {dashboard?.stats.overallProgress ?? 0}%
                   </p>
+                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">Readiness score</p>
                 </div>
-              </div>
+              </section>
 
-              {/* Quick Navigation Actions */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {/* Focused Study & CBT Action Cards */}
+              <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => selectTab('start-cbt')}
-                  className="rounded-lg border border-slate-300 bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
+                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <p className="text-sm font-bold text-[#0F2447] dark:text-white">4-Subject JAMB CBT</p>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                    Use of English plus three subjects with timer.
-                  </p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">4-Subject JAMB CBT</p>
+                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
+                      Timed full UTME simulation with Use of English and 3 subjects.
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => selectTab('practice')}
+                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">Subject Drill</p>
+                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
+                      Practise one subject or topic at a time with instant scoring.
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
+                </button>
+
                 <button
                   type="button"
                   onClick={() => selectTab('past-questions')}
-                  className="rounded-lg border border-slate-300 bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
+                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <p className="text-sm font-bold text-[#0F2447] dark:text-white">Past Questions</p>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                    Read questions by subject and check answers.
-                  </p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">Past Questions</p>
+                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
+                      Read verified questions by subject and check explanations.
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
                 </button>
+
                 <button
                   type="button"
                   onClick={() => selectTab('results')}
-                  className="rounded-lg border border-slate-300 bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
+                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <p className="text-sm font-bold text-[#0F2447] dark:text-white">My Results</p>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                    Review past scores and answer explanations.
-                  </p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">My Results &amp; Corrections</p>
+                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
+                      Review past scores out of 400 and answer explanations.
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
                 </button>
-              </div>
+              </section>
 
               {/* Recent Results & Notices */}
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-                <div className="rounded-lg border border-slate-300 bg-white lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-                    <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">Recent Examination Results</h2>
+              <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-12 lg:gap-5">
+                <div className="rounded-[14px] border border-[#E2E8F0] bg-white lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-[#E2E8F0] px-4 py-3 dark:border-slate-800">
+                    <h2 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">
+                      Recent Examination Results
+                    </h2>
                     <button
                       type="button"
                       onClick={() => selectTab('results')}
@@ -602,15 +717,17 @@ export default function StudentWorkspace({
                       View All
                     </button>
                   </div>
-                  <div className="divide-y divide-slate-200 dark:divide-slate-800">
+                  <div className="divide-y divide-[#E2E8F0] dark:divide-slate-800">
                     {(dashboard?.recentResults || []).length === 0 ? (
-                      <p className="p-4 text-xs text-slate-500">No examinations completed yet.</p>
+                      <p className="p-4 text-xs text-[#475569] dark:text-slate-400">
+                        No examinations completed yet. Start a test or use Preview CBT Screen above.
+                      </p>
                     ) : (
                       dashboard!.recentResults.map((r) => (
                         <div key={r.id} className="flex items-center justify-between gap-3 px-4 py-3">
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{r.examTitle}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="truncate text-sm font-semibold text-[#0F172A] dark:text-white">{r.examTitle}</p>
+                            <p className="text-xs text-[#475569] tabular-nums dark:text-slate-400">
                               {r.correctCount}/{r.totalQuestions} correct · {new Date(r.createdAt).toLocaleDateString()}
                             </p>
                           </div>
@@ -620,7 +737,7 @@ export default function StudentWorkspace({
                               setResultSessionToOpen(r.sessionId);
                               selectTab('results');
                             }}
-                            className="shrink-0 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 font-mono text-xs font-bold text-[#1D4ED8] hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                            className="min-h-[36px] shrink-0 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 font-mono text-xs font-bold text-[#1D4ED8] tabular-nums hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
                           >
                             {r.scoreOutOf400}/400
                           </button>
@@ -630,18 +747,18 @@ export default function StudentWorkspace({
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-slate-300 bg-white lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
-                  <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-                    <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">Notices</h2>
+                <div className="rounded-[14px] border border-[#E2E8F0] bg-white lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="border-b border-[#E2E8F0] px-4 py-3 dark:border-slate-800">
+                    <h2 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">Notices</h2>
                   </div>
-                  <div className="divide-y divide-slate-200 dark:divide-slate-800">
+                  <div className="divide-y divide-[#E2E8F0] dark:divide-slate-800">
                     {(dashboard?.announcements || []).length === 0 ? (
-                      <p className="p-4 text-xs text-slate-500">No notices at this time.</p>
+                      <p className="p-4 text-xs text-[#475569] dark:text-slate-400">No notices at this time.</p>
                     ) : (
                       dashboard!.announcements.map((a) => (
                         <div key={a.id} className="p-4">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">{a.title}</p>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{a.body}</p>
+                          <p className="text-sm font-bold text-[#0F172A] dark:text-white">{a.title}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">{a.body}</p>
                         </div>
                       ))
                     )}
@@ -651,7 +768,13 @@ export default function StudentWorkspace({
             </div>
           )}
 
-          {tab === 'start-cbt' && <StartCbtView student={user} onSessionStarted={onEnterExam} />}
+          {tab === 'start-cbt' && (
+            <StartCbtView
+              student={user}
+              onSubjectsChanged={(subs) => setSelectedFourSubjects(subs)}
+              onSessionStarted={onEnterExam}
+            />
+          )}
           {tab === 'practice' && <PracticeExamsView onSessionStarted={onEnterExam} />}
           {tab === 'mocks' && (
             <MockExamsView

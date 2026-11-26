@@ -320,25 +320,25 @@ export default function ExamHall({
   const showPaletteDefault = preferences?.showQuestionPalette !== false;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F6F8] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen flex-col bg-[#F4F6F9] text-[#0F172A] dark:bg-slate-950 dark:text-slate-100">
       {/* Top Examination Bar */}
-      <header className="sticky top-0 z-30 border-b border-slate-300 bg-[#0F2447] text-white dark:border-slate-800">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-5">
+      <header className="sticky top-0 z-30 border-b border-[#E2E8F0] bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-5">
           {/* Exam Identity & Status */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="hidden text-xs font-bold tracking-wide text-blue-200 sm:inline">
+              <span className="hidden text-xs font-bold tracking-wide text-[#1D4ED8] sm:inline dark:text-blue-400">
                 Acadet CBT JAMB
               </span>
-              <span className="hidden text-blue-500 sm:inline">|</span>
-              <p className="truncate font-display text-sm font-bold text-white">
+              <span className="hidden text-slate-300 sm:inline dark:text-slate-700">|</span>
+              <p className="truncate font-display text-sm font-bold text-[#0F172A] dark:text-white">
                 {session.examTitle}
               </p>
             </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-blue-200">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-[#475569] dark:text-slate-400">
               {candidate && (
                 <>
-                  <span className="hidden font-medium text-white sm:inline">{candidate.fullName}</span>
+                  <span className="hidden font-semibold text-[#0F172A] sm:inline dark:text-slate-200">{candidate.fullName}</span>
                   <span className="hidden sm:inline" aria-hidden="true">·</span>
                 </>
               )}
@@ -346,7 +346,7 @@ export default function ExamHall({
                 {counts.answered}/{counts.total} Answered
               </span>
               <span aria-hidden="true">·</span>
-              <span className={savingStatus === 'error' ? 'text-rose-300' : 'text-emerald-300'}>
+              <span className={savingStatus === 'error' ? 'font-semibold text-rose-700' : 'font-semibold text-[#15803D] dark:text-emerald-400'}>
                 {savingStatus === 'saving'
                   ? 'Saving...'
                   : savingStatus === 'saved'
@@ -363,19 +363,17 @@ export default function ExamHall({
             {session.examMode === 'timed' ? (
               <div
                 aria-label="Countdown timer"
-                className={`flex h-9 items-center gap-1.5 rounded-md border px-2.5 font-mono text-sm font-bold tabular-nums sm:px-3 ${
-                  timerUrgent
-                    ? 'border-rose-400 bg-rose-700 text-white'
-                    : timerWarning
-                    ? 'border-amber-400 bg-amber-500 text-slate-950'
-                    : 'border-blue-700 bg-[#0A1D3D] text-white'
+                className={`flex h-10 items-center gap-1.5 rounded-lg border px-2.5 font-mono text-sm font-bold tabular-nums sm:px-3 ${
+                  timerUrgent || timerWarning
+                    ? 'border-[#B45309] bg-amber-50 text-[#B45309] dark:border-amber-600 dark:bg-amber-950/60 dark:text-amber-300'
+                    : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-white'
                 }`}
               >
                 <Clock className="h-3.5 w-3.5 shrink-0" />
                 <span>{formatDuration(remainingSeconds)}</span>
               </div>
             ) : (
-              <div className="hidden h-9 items-center rounded-md border border-emerald-700 bg-emerald-950 px-2.5 text-xs font-semibold text-emerald-300 sm:flex">
+              <div className="hidden h-10 items-center rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-[#15803D] sm:flex dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
                 Study Mode
               </div>
             )}
@@ -384,7 +382,7 @@ export default function ExamHall({
               type="button"
               onClick={() => setLargeFont((v) => !v)}
               title="Change text size"
-              className="hidden h-9 items-center justify-center rounded-md border border-blue-700 bg-[#0A1D3D] px-2.5 font-mono text-xs font-bold text-white hover:bg-blue-900 sm:inline-flex"
+              className="hidden h-10 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white px-2.5 font-mono text-xs font-bold text-[#0F172A] hover:bg-[#F8FAFC] sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             >
               {largeFont ? 'A-' : 'A+'}
             </button>
@@ -393,7 +391,7 @@ export default function ExamHall({
               type="button"
               onClick={() => setShowInstructions(true)}
               title="Exam Help"
-              className="hidden h-9 items-center gap-1 rounded-md border border-blue-700 bg-[#0A1D3D] px-2.5 text-xs font-semibold text-white hover:bg-blue-900 md:inline-flex"
+              className="hidden h-10 items-center gap-1 rounded-lg border border-[#E2E8F0] bg-white px-2.5 text-xs font-semibold text-[#0F172A] hover:bg-[#F8FAFC] md:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             >
               <HelpCircle className="h-3.5 w-3.5" />
               <span>Help</span>
@@ -403,7 +401,7 @@ export default function ExamHall({
               type="button"
               onClick={() => setShowCalculator(true)}
               aria-label="Open Calculator"
-              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-blue-700 bg-[#0A1D3D] px-2.5 text-xs font-semibold text-white hover:bg-blue-900 sm:px-3"
+              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-white px-2.5 text-xs font-semibold text-[#0F172A] hover:bg-[#F8FAFC] sm:px-3 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             >
               <Calculator className="h-4 w-4" />
               <span className="hidden sm:inline">Calculator</span>
@@ -412,7 +410,7 @@ export default function ExamHall({
             <button
               type="button"
               onClick={() => setShowConfirmSubmit(true)}
-              className="inline-flex h-9 items-center justify-center rounded-md bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 sm:px-3.5"
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-[#1D4ED8] px-3 text-xs font-bold text-white hover:bg-blue-800 sm:px-3.5"
             >
               Submit
             </button>
@@ -420,8 +418,8 @@ export default function ExamHall({
         </div>
 
         {/* 4-Subject Navigation Tabs */}
-        <div className="border-t border-blue-900 bg-[#15315E]">
-          <div className="mx-auto flex max-w-7xl items-center gap-1.5 overflow-x-auto px-3 py-1.5 sm:px-5">
+        <div className="border-t border-[#E2E8F0] bg-[#F8FAFC] dark:border-slate-800 dark:bg-slate-950">
+          <div className="mx-auto flex max-w-7xl items-center gap-1.5 overflow-x-auto px-4 py-2 sm:px-5">
             {subjectSummaries.map((sub) => {
               const isCurrentSub = currentQuestion.subjectId === sub.id;
               return (
@@ -429,16 +427,16 @@ export default function ExamHall({
                   key={sub.id}
                   type="button"
                   onClick={() => jumpToSubject(sub.id)}
-                  className={`flex min-h-[36px] shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-1 text-xs font-semibold ${
+                  className={`flex min-h-[38px] shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
                     isCurrentSub
-                      ? 'bg-white text-[#0F2447]'
-                      : 'bg-[#0F2447]/60 text-blue-100 hover:bg-[#0F2447] hover:text-white'
+                      ? 'border-[#1D4ED8] bg-[#1D4ED8] text-white'
+                      : 'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
                   }`}
                 >
                   <span>{sub.name}</span>
                   <span
                     className={`font-mono text-[11px] tabular-nums ${
-                      isCurrentSub ? 'text-[#1D4ED8]' : 'text-blue-300'
+                      isCurrentSub ? 'text-blue-100' : 'text-[#475569] dark:text-slate-400'
                     }`}
                   >
                     {sub.answered}/{sub.total}
@@ -462,27 +460,27 @@ export default function ExamHall({
       )}
 
       {/* Main CBT Question Stage + Navigation Grid */}
-      <main className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-4 px-3 py-4 pb-20 sm:px-5 lg:grid-cols-12 lg:py-5 lg:pb-6">
+      <main className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-4 pb-24 sm:px-5 lg:grid-cols-12 lg:py-5 lg:pb-6">
         {/* Question Reading & Options Panel */}
         <section className={showPaletteDefault ? 'lg:col-span-8' : 'lg:col-span-12'}>
-          <div className="flex h-full flex-col justify-between rounded-lg border border-slate-300 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex h-full flex-col justify-between rounded-[14px] border border-[#E2E8F0] bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <div>
               {/* Question Header */}
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3 dark:border-slate-800">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3 dark:border-slate-800">
                 <div>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h1 className="font-display text-base font-bold text-[#0F2447] sm:text-lg dark:text-white">
+                    <h1 className="font-display text-base font-bold text-[#0F172A] sm:text-lg dark:text-white">
                       {currentQuestion.subjectName} — Question {subjectPosition.indexInSubject} of{' '}
                       {subjectPosition.totalInSubject}
                     </h1>
                     {currentQuestion.isMarkedForReview && (
-                      <span className="inline-flex items-center gap-1 rounded-sm bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                      <span className="inline-flex items-center gap-1 rounded-sm bg-amber-50 px-2 py-0.5 text-xs font-semibold text-[#B45309] dark:bg-amber-950 dark:text-amber-300">
                         <Bookmark className="h-3 w-3 fill-current" />
                         Marked
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
                     Item {currentIndex + 1} of {questions.length} · {currentQuestion.topicName} ·{' '}
                     {currentQuestion.questionSource === 'verified_past_question'
                       ? `Past Question${currentQuestion.examYear ? ` (${currentQuestion.examYear})` : ''}`
@@ -494,7 +492,7 @@ export default function ExamHall({
                   <button
                     type="button"
                     onClick={() => handleSelectOption(null)}
-                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="min-h-[36px] rounded-lg border border-[#E2E8F0] px-2.5 py-1 text-xs font-semibold text-[#475569] hover:bg-[#F8FAFC] dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
                     Clear Choice
                   </button>
@@ -503,7 +501,7 @@ export default function ExamHall({
 
               {/* Question Stem */}
               <div
-                className={`mt-5 mb-5 leading-relaxed font-medium text-slate-900 dark:text-slate-100 ${
+                className={`mt-5 mb-5 leading-[1.65] font-medium text-[#0F172A] dark:text-slate-100 ${
                   largeFont ? 'text-lg sm:text-xl' : 'text-base sm:text-[17px]'
                 }`}
               >
@@ -511,7 +509,7 @@ export default function ExamHall({
               </div>
 
               {currentQuestion.questionImageUrl && (
-                <div className="mb-5 rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
+                <div className="mb-5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 dark:border-slate-700 dark:bg-slate-950">
                   <img
                     src={currentQuestion.questionImageUrl}
                     alt={`Diagram for question ${currentIndex + 1}`}
@@ -532,17 +530,17 @@ export default function ExamHall({
                       role="radio"
                       aria-checked={isSelected}
                       onClick={() => handleSelectOption(opt.label as 'A' | 'B' | 'C' | 'D')}
-                      className={`flex min-h-[48px] w-full items-center gap-3.5 rounded-md border px-3.5 py-3 text-left ${
+                      className={`flex min-h-[52px] w-full items-center gap-3.5 rounded-[12px] border px-3.5 py-3 text-left ${
                         isSelected
-                          ? 'border-[#1D4ED8] bg-blue-50 text-slate-950 dark:border-blue-500 dark:bg-blue-950/60 dark:text-white'
-                          : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
+                          ? 'border-[#1D4ED8] bg-blue-50 text-[#0F172A] dark:border-blue-500 dark:bg-blue-950/60 dark:text-white'
+                          : 'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
                       }`}
                     >
                       <span
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border font-mono text-xs font-bold ${
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border font-mono text-xs font-bold ${
                           isSelected
                             ? 'border-[#1D4ED8] bg-[#1D4ED8] text-white'
-                            : 'border-slate-300 bg-slate-100 text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'
+                            : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'
                         }`}
                       >
                         {opt.label}
@@ -616,18 +614,18 @@ export default function ExamHall({
         {/* Desktop Question Navigation Panel */}
         {showPaletteDefault && (
           <aside className="hidden lg:col-span-4 lg:block">
-            <div className="sticky top-28 rounded-lg border border-slate-300 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-slate-800">
-                <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">
+            <div className="sticky top-28 rounded-[14px] border border-[#E2E8F0] bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-3 flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 dark:border-slate-800">
+                <h2 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">
                   Question Navigation
                 </h2>
-                <span className="font-mono text-xs font-semibold text-slate-600 tabular-nums dark:text-slate-400">
+                <span className="font-mono text-xs font-semibold text-[#475569] tabular-nums dark:text-slate-400">
                   {counts.answered}/{counts.total} Answered
                 </span>
               </div>
 
               {/* Filter Tabs */}
-              <div className="mb-3 grid grid-cols-4 gap-1 rounded-md border border-slate-200 bg-slate-100 p-1 text-[11px] font-semibold dark:border-slate-700 dark:bg-slate-800">
+              <div className="mb-3 grid grid-cols-4 gap-1 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-1 text-[11px] font-semibold dark:border-slate-700 dark:bg-slate-800">
                 {(
                   [
                     ['subject', 'Subject'],
@@ -640,10 +638,10 @@ export default function ExamHall({
                     key={scopeKey}
                     type="button"
                     onClick={() => setPaletteScope(scopeKey)}
-                    className={`rounded-sm py-1 ${
+                    className={`rounded-md py-1 ${
                       paletteScope === scopeKey
-                        ? 'bg-white text-[#0F2447] dark:bg-slate-900 dark:text-white'
-                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-300'
+                        ? 'bg-white text-[#0F172A] dark:bg-slate-900 dark:text-white'
+                        : 'text-[#475569] hover:text-[#0F172A] dark:text-slate-300'
                     }`}
                   >
                     {label}
@@ -652,7 +650,7 @@ export default function ExamHall({
               </div>
 
               {visiblePaletteEntries.length === 0 ? (
-                <p className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                <p className="py-6 text-center text-xs text-[#475569] dark:text-slate-400">
                   No questions in this view.
                 </p>
               ) : (
@@ -660,20 +658,20 @@ export default function ExamHall({
                   {visiblePaletteEntries.map(({ q, globalIndex, displayNumber }) => {
                     const isCurrent = globalIndex === currentIndex;
                     let cls =
-                      'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+                      'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
                     if (isCurrent) {
-                      cls = 'border-[#1D4ED8] bg-[#1D4ED8] text-white ring-2 ring-blue-300 dark:ring-blue-800';
+                      cls = 'border-[#1D4ED8] bg-[#1D4ED8] text-white';
                     } else if (q.isMarkedForReview) {
-                      cls = 'border-amber-600 bg-amber-500 text-white';
+                      cls = 'border-[#B45309] bg-[#B45309] text-white';
                     } else if (q.selectedOption) {
-                      cls = 'border-emerald-700 bg-emerald-700 text-white';
+                      cls = 'border-[#15803D] bg-[#15803D] text-white';
                     }
                     return (
                       <button
                         key={q.questionId}
                         type="button"
                         onClick={() => setCurrentIndex(globalIndex)}
-                        className={`flex h-9 items-center justify-center rounded-sm border font-mono text-xs font-bold tabular-nums ${cls}`}
+                        className={`flex h-9 items-center justify-center rounded-md border font-mono text-xs font-bold tabular-nums ${cls}`}
                       >
                         {displayNumber}
                       </button>
@@ -683,29 +681,29 @@ export default function ExamHall({
               )}
 
               {/* Clear Status Color Legend */}
-              <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3 text-xs dark:border-slate-800">
+              <div className="mt-4 grid grid-cols-2 gap-2 border-t border-[#E2E8F0] pt-3 text-xs dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-xs bg-emerald-700" />
-                  <span className="text-slate-700 dark:text-slate-300">Answered ({counts.answered})</span>
+                  <span className="h-3.5 w-3.5 rounded-xs bg-[#15803D]" />
+                  <span className="text-[#475569] dark:text-slate-300">Answered ({counts.answered})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-3.5 w-3.5 rounded-xs border border-slate-400 bg-white dark:bg-slate-800" />
-                  <span className="text-slate-700 dark:text-slate-300">Not Answered ({counts.unanswered})</span>
+                  <span className="text-[#475569] dark:text-slate-300">Not Answered ({counts.unanswered})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-xs bg-amber-500" />
-                  <span className="text-slate-700 dark:text-slate-300">Marked ({counts.marked})</span>
+                  <span className="h-3.5 w-3.5 rounded-xs bg-[#B45309]" />
+                  <span className="text-[#475569] dark:text-slate-300">Marked ({counts.marked})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-3.5 w-3.5 rounded-xs bg-[#1D4ED8]" />
-                  <span className="text-slate-700 dark:text-slate-300">Current</span>
+                  <span className="text-[#475569] dark:text-slate-300">Current</span>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowConfirmSubmit(true)}
-                className="mt-4 min-h-[42px] w-full rounded-md bg-rose-700 py-2 text-sm font-bold text-white hover:bg-rose-800"
+                className="mt-4 min-h-[44px] w-full rounded-[10px] bg-[#1D4ED8] py-2 text-sm font-bold text-white hover:bg-blue-800"
               >
                 Submit Examination
               </button>
@@ -715,13 +713,13 @@ export default function ExamHall({
       </main>
 
       {/* Mobile Fixed Exam Bottom Controls */}
-      <nav className="fixed right-0 bottom-0 left-0 z-30 border-t border-slate-300 bg-white px-2 py-2 lg:hidden dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto grid max-w-lg grid-cols-4 gap-1.5">
+      <nav className="fixed right-0 bottom-0 left-0 z-30 border-t border-[#E2E8F0] bg-white px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:hidden dark:border-slate-800 dark:bg-slate-900">
+        <div className="mx-auto grid max-w-lg grid-cols-4 gap-2">
           <button
             type="button"
             disabled={currentIndex === 0}
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            className="flex min-h-[42px] items-center justify-center gap-1 rounded-md border border-slate-300 bg-white text-xs font-semibold text-slate-800 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border border-[#E2E8F0] bg-white text-xs font-semibold text-[#0F172A] disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             <ChevronLeft className="h-4 w-4" />
             <span>Prev</span>
@@ -730,10 +728,10 @@ export default function ExamHall({
           <button
             type="button"
             onClick={handleToggleMark}
-            className={`flex min-h-[42px] items-center justify-center gap-1 rounded-md border text-xs font-semibold ${
+            className={`flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border text-xs font-semibold ${
               currentQuestion.isMarkedForReview
-                ? 'border-amber-500 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-300'
-                : 'border-slate-300 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                ? 'border-[#B45309] bg-amber-50 text-[#B45309] dark:bg-amber-950 dark:text-amber-300'
+                : 'border-[#E2E8F0] bg-white text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
             }`}
           >
             <Bookmark className="h-3.5 w-3.5" />
@@ -743,7 +741,7 @@ export default function ExamHall({
           <button
             type="button"
             onClick={() => setShowMobilePalette(true)}
-            className="flex min-h-[42px] items-center justify-center gap-1 rounded-md border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-semibold text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             <Grid className="h-3.5 w-3.5" />
             <span>Grid</span>
@@ -753,7 +751,7 @@ export default function ExamHall({
             <button
               type="button"
               onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-              className="flex min-h-[42px] items-center justify-center gap-1 rounded-md bg-[#1D4ED8] text-xs font-semibold text-white"
+              className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] bg-[#1D4ED8] text-xs font-semibold text-white"
             >
               <span>Next</span>
               <ChevronRight className="h-4 w-4" />
@@ -762,7 +760,7 @@ export default function ExamHall({
             <button
               type="button"
               onClick={() => setShowConfirmSubmit(true)}
-              className="flex min-h-[42px] items-center justify-center rounded-md bg-emerald-700 text-xs font-semibold text-white"
+              className="flex min-h-[44px] items-center justify-center rounded-[10px] bg-[#15803D] text-xs font-semibold text-white"
             >
               Submit
             </button>
@@ -772,28 +770,35 @@ export default function ExamHall({
 
       {/* Mobile Question Navigation Sheet */}
       {showMobilePalette && (
-        <div className="fixed inset-0 z-50 flex items-end bg-slate-950/50 lg:hidden">
-          <div className="w-full rounded-t-xl border-t border-slate-300 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-slate-800">
-              <h3 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-slate-950/50 lg:hidden"
+          onClick={() => setShowMobilePalette(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full rounded-t-[16px] border-t border-[#E2E8F0] bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="mb-3 flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 dark:border-slate-800">
+              <h3 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">
                 Question Grid ({counts.answered}/{counts.total} Answered)
               </h3>
               <button
                 type="button"
                 onClick={() => setShowMobilePalette(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100 dark:text-slate-300"
+                aria-label="Close question grid"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-[#475569] hover:bg-[#F8FAFC] dark:text-slate-300"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="grid max-h-60 grid-cols-6 gap-1.5 overflow-y-auto">
+            <div className="grid max-h-60 grid-cols-5 gap-2 overflow-y-auto">
               {questions.map((q, idx) => {
                 const isCurrent = idx === currentIndex;
                 let cls =
-                  'border-slate-300 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+                  'border-[#E2E8F0] bg-white text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
                 if (isCurrent) cls = 'border-[#1D4ED8] bg-[#1D4ED8] text-white';
-                else if (q.isMarkedForReview) cls = 'border-amber-600 bg-amber-500 text-white';
-                else if (q.selectedOption) cls = 'border-emerald-700 bg-emerald-700 text-white';
+                else if (q.isMarkedForReview) cls = 'border-[#B45309] bg-[#B45309] text-white';
+                else if (q.selectedOption) cls = 'border-[#15803D] bg-[#15803D] text-white';
                 return (
                   <button
                     key={q.questionId}
@@ -802,18 +807,18 @@ export default function ExamHall({
                       setCurrentIndex(idx);
                       setShowMobilePalette(false);
                     }}
-                    className={`flex h-10 items-center justify-center rounded-sm border font-mono text-xs font-bold ${cls}`}
+                    className={`flex h-11 items-center justify-center rounded-lg border font-mono text-xs font-bold tabular-nums ${cls}`}
                   >
                     {idx + 1}
                   </button>
                 );
               })}
             </div>
-            <div className="mt-3 flex flex-wrap gap-3 border-t border-slate-200 pt-2.5 text-[11px] dark:border-slate-800">
-              <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-xs bg-emerald-700" /> Answered</span>
-              <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-xs border border-slate-400 bg-white" /> Not Answered</span>
-              <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-xs bg-amber-500" /> Marked</span>
-              <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-xs bg-[#1D4ED8]" /> Current</span>
+            <div className="mt-3 flex flex-wrap gap-3 border-t border-[#E2E8F0] pt-2.5 text-xs text-[#475569] dark:border-slate-800 dark:text-slate-400">
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#15803D]" /> Answered</span>
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs border border-slate-400 bg-white dark:bg-slate-800" /> Open</span>
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#B45309]" /> Marked</span>
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#1D4ED8]" /> Current</span>
             </div>
           </div>
         </div>

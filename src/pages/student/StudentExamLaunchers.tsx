@@ -51,9 +51,11 @@ interface PastQuestionRow {
 
 export function StartCbtView({
   student,
+  onSubjectsChanged,
   onSessionStarted,
 }: {
   student?: { fullName: string; registrationNumber?: string; jambYear?: number };
+  onSubjectsChanged?: (subjects: Array<{ code: string; name: string }>) => void;
   onSessionStarted: (sessionId: string) => void;
 }) {
   const [subjects, setSubjects] = useState<SubjectItem[]>([]);
@@ -73,10 +75,24 @@ export function StartCbtView({
       .then((res) => {
         setSubjects(res.subjects);
         setCombinations(res.combinations);
+        let restoredIds: string[] = [];
+        try {
+          const savedRaw = localStorage.getItem('acadet_selected_utme_subjects');
+          if (savedRaw) {
+            const parsed = JSON.parse(savedRaw) as Array<{ code: string }>;
+            restoredIds = parsed
+              .filter((item) => item.code !== 'ENG')
+              .map((item) => res.subjects.find((s) => s.code === item.code)?.id)
+              .filter(Boolean) as string[];
+          }
+        } catch {
+          // ignore storage errors
+        }
         const defaults = res.subjects
           .filter((s) => ['MTH', 'PHY', 'CHM'].includes(s.code))
           .map((s) => s.id);
-        setSelectedElectiveIds((prev) => (prev.length === 3 ? prev : defaults));
+        const initialElectives = restoredIds.length === 3 ? restoredIds : defaults;
+        setSelectedElectiveIds((prev) => (prev.length === 3 ? prev : initialElectives));
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : 'Unable to load subjects.');
@@ -102,6 +118,18 @@ export function StartCbtView({
       .filter(Boolean) as SubjectItem[];
     return englishSubject ? [englishSubject, ...picked] : picked;
   }, [englishSubject, selectedElectiveIds, subjects]);
+
+  useEffect(() => {
+    if (selectedSubjectsList.length === 4) {
+      const compact = selectedSubjectsList.map((s) => ({ code: s.code, name: s.name }));
+      try {
+        localStorage.setItem('acadet_selected_utme_subjects', JSON.stringify(compact));
+      } catch {
+        // ignore storage errors
+      }
+      onSubjectsChanged?.(compact);
+    }
+  }, [selectedSubjectsList, onSubjectsChanged]);
 
   const toggleElective = (id: string) => {
     setError(null);
