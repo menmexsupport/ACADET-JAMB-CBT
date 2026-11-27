@@ -3,15 +3,14 @@ import {
   ArrowLeft,
   Bookmark,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
   Grid,
+  LogOut,
   RotateCcw,
   X,
   XCircle,
 } from 'lucide-react';
 import { formatDuration } from '../../lib/pdfReport.ts';
+import BrandEmblem from '../common/BrandEmblem.tsx';
 
 export interface SampleSubject {
   code: string;
@@ -322,7 +321,7 @@ const SAMPLE_BANK: SampleQuestion[] = [
       'There are 4 moles of gas on the left and 2 moles on the right; higher pressure shifts equilibrium toward fewer gas moles (right).',
   },
 
-  // Biology (used if candidate chose BIO)
+  // Biology
   {
     id: 'bio-1',
     subjectCode: 'BIO',
@@ -390,14 +389,13 @@ const SAMPLE_BANK: SampleQuestion[] = [
 ];
 
 export default function SampleCbtPreview({
-  candidateName = 'Adewale Ogunleye',
-  registrationNumber = 'ACD-JAMB-2026-1001',
+  candidateName = 'John Doe',
+  registrationNumber = 'PREJAMB2026001',
   selectedSubjects,
   onClose,
 }: SampleCbtPreviewProps) {
   const activeSubjects = useMemo(() => {
     const base = selectedSubjects && selectedSubjects.length === 4 ? selectedSubjects : DEFAULT_SUBJECTS;
-    // Map only subjects that exist in our sample bank; fill remaining slots from DEFAULT_SUBJECTS so 4 tabs always work smoothly
     const bankCodes = new Set(SAMPLE_BANK.map((q) => q.subjectCode));
     const resolved: SampleSubject[] = [];
     for (const s of base) {
@@ -425,7 +423,7 @@ export default function SampleCbtPreview({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, 'A' | 'B' | 'C' | 'D'>>({});
   const [marked, setMarked] = useState<Record<string, boolean>>({});
-  const [remainingSeconds, setRemainingSeconds] = useState(20 * 60); // 20-minute sample countdown
+  const [remainingSeconds, setRemainingSeconds] = useState(20 * 60);
   const [showGridDrawer, setShowGridDrawer] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -501,21 +499,21 @@ export default function SampleCbtPreview({
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] text-[#0F172A] dark:bg-slate-950 dark:text-slate-100">
-        <header className="sticky top-0 z-30 border-b border-[#E2E8F0] bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="min-h-screen bg-[#F2F4F7] text-[#111827] dark:bg-slate-950 dark:text-slate-100">
+        <header className="sticky top-0 z-30 border-b border-[#094D25] bg-[#0B5E2E] text-white">
           <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#0F172A] dark:text-white"
+              className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-white"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>Back to Dashboard</span>
+              <span>Return</span>
             </button>
             <button
               type="button"
               onClick={handleRestart}
-              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-[10px] border border-[#E2E8F0] bg-white px-3 text-xs font-semibold text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-md border border-white/40 bg-[#094D25] px-3 text-xs font-bold text-white hover:bg-[#084722]"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Retake Sample</span>
@@ -524,61 +522,61 @@ export default function SampleCbtPreview({
         </header>
 
         <main className="mx-auto max-w-4xl space-y-4 px-4 py-5">
-          <div className="rounded-[14px] border border-[#E2E8F0] bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs font-semibold tracking-wide text-[#1D4ED8] uppercase dark:text-blue-400">
+          <div className="rounded-md border border-[#CBD5E1] bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <p className="text-xs font-bold tracking-wide text-[#0B5E2E] uppercase dark:text-emerald-400">
               Sample CBT Result Summary
             </p>
-            <h1 className="mt-1 font-display text-xl font-bold text-[#0F172A] dark:text-white">
+            <h1 className="mt-1 font-display text-xl font-bold text-[#111827] dark:text-white">
               {candidateName}
             </h1>
-            <p className="mt-0.5 font-mono text-xs text-[#475569] tabular-nums dark:text-slate-400">
-              {registrationNumber} · Practice Preview
+            <p className="mt-0.5 font-mono text-xs text-[#4B5563] tabular-nums dark:text-slate-400">
+              {registrationNumber} · UTME Practice Preview
             </p>
 
-            <div className="mt-4 grid grid-cols-2 rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-950">
-              <div className="border-r border-b border-[#E2E8F0] p-3.5 sm:border-b-0 dark:border-slate-800">
-                <p className="text-xs font-medium text-[#475569] dark:text-slate-400">UTME Score</p>
-                <p className="mt-1 font-mono text-2xl font-bold text-[#15803D] tabular-nums dark:text-emerald-400">
+            <div className="mt-4 grid grid-cols-2 rounded-md border border-[#CBD5E1] bg-[#F8FAFC] sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-950">
+              <div className="border-r border-b border-[#CBD5E1] p-3.5 sm:border-b-0 dark:border-slate-800">
+                <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">UTME Score</p>
+                <p className="mt-1 font-mono text-2xl font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
                   {scoreSummary.scoreOutOf400}/400
                 </p>
               </div>
-              <div className="border-b border-[#E2E8F0] p-3.5 sm:border-r sm:border-b-0 dark:border-slate-800">
-                <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Accuracy</p>
-                <p className="mt-1 font-mono text-2xl font-bold text-[#1D4ED8] tabular-nums dark:text-blue-400">
+              <div className="border-b border-[#CBD5E1] p-3.5 sm:border-r sm:border-b-0 dark:border-slate-800">
+                <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">Accuracy</p>
+                <p className="mt-1 font-mono text-2xl font-bold text-[#111827] tabular-nums dark:text-white">
                   {scoreSummary.percentage.toFixed(0)}%
                 </p>
               </div>
-              <div className="border-r border-[#E2E8F0] p-3.5 dark:border-slate-800">
-                <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Correct</p>
-                <p className="mt-1 font-mono text-2xl font-bold text-[#15803D] tabular-nums dark:text-emerald-400">
+              <div className="border-r border-[#CBD5E1] p-3.5 dark:border-slate-800">
+                <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">Correct</p>
+                <p className="mt-1 font-mono text-2xl font-bold text-[#16A34A] tabular-nums dark:text-emerald-400">
                   {scoreSummary.correct}/{scoreSummary.total}
                 </p>
               </div>
               <div className="p-3.5">
-                <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Unanswered</p>
-                <p className="mt-1 font-mono text-2xl font-bold text-[#0F172A] tabular-nums dark:text-white">
+                <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">Unanswered</p>
+                <p className="mt-1 font-mono text-2xl font-bold text-[#111827] tabular-nums dark:text-white">
                   {unansweredCount}
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-[12px] border border-[#E2E8F0] dark:border-slate-800">
+            <div className="mt-4 overflow-hidden rounded-md border border-[#CBD5E1] dark:border-slate-800">
               <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-[#475569] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+                <thead className="border-b border-[#CBD5E1] bg-[#F3F4F6] text-[#374151] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
                   <tr>
                     <th className="px-3.5 py-2.5 font-semibold">Subject</th>
                     <th className="px-3.5 py-2.5 text-right font-semibold">Correct</th>
                     <th className="px-3.5 py-2.5 text-right font-semibold">Score</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E2E8F0] dark:divide-slate-800">
+                <tbody className="divide-y divide-[#E5E7EB] dark:divide-slate-800">
                   {scoreSummary.breakdown.map((b) => (
                     <tr key={b.code}>
-                      <td className="px-3.5 py-2.5 font-semibold text-[#0F172A] dark:text-white">{b.name}</td>
+                      <td className="px-3.5 py-2.5 font-semibold text-[#111827] dark:text-white">{b.name}</td>
                       <td className="px-3.5 py-2.5 text-right font-mono tabular-nums">
                         {b.correct}/{b.total}
                       </td>
-                      <td className="px-3.5 py-2.5 text-right font-mono font-bold text-[#15803D] tabular-nums dark:text-emerald-400">
+                      <td className="px-3.5 py-2.5 text-right font-mono font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
                         {b.percentage}%
                       </td>
                     </tr>
@@ -589,7 +587,7 @@ export default function SampleCbtPreview({
           </div>
 
           <div className="space-y-3">
-            <h2 className="font-display text-base font-bold text-[#0F172A] dark:text-white">
+            <h2 className="font-display text-base font-bold text-[#111827] dark:text-white">
               Corrections &amp; Explanations
             </h2>
             {questions.map((q, idx) => {
@@ -598,30 +596,30 @@ export default function SampleCbtPreview({
               return (
                 <div
                   key={q.id}
-                  className="rounded-[14px] border border-[#E2E8F0] bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+                  className="rounded-md border border-[#CBD5E1] bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-2.5 dark:border-slate-800">
-                    <span className="text-xs font-semibold text-[#475569] dark:text-slate-400">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5E7EB] pb-2.5 dark:border-slate-800">
+                    <span className="text-xs font-semibold text-[#4B5563] dark:text-slate-400">
                       Item {idx + 1} · {q.subjectName}
                     </span>
                     <span
                       className={`inline-flex items-center gap-1 text-xs font-bold ${
-                        isRight ? 'text-[#15803D] dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
+                        isRight ? 'text-[#16A34A] dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
                       }`}
                     >
                       {isRight ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                       {isRight ? 'Correct' : picked ? `Wrong (Picked ${picked})` : 'Unanswered'}
                     </span>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed font-medium text-[#0F172A] dark:text-slate-100">
+                  <p className="mt-3 text-sm leading-relaxed font-medium text-[#111827] dark:text-slate-100">
                     {q.questionText}
                   </p>
-                  <p className="mt-2 text-xs font-semibold text-[#15803D] dark:text-emerald-400">
+                  <p className="mt-2 text-xs font-semibold text-[#0B5E2E] dark:text-emerald-400">
                     Correct Option: {q.correctOption}.{' '}
                     {q.options.find((o) => o.label === q.correctOption)?.text}
                   </p>
-                  <p className="mt-2 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2 text-xs leading-relaxed text-[#475569] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
-                    <strong className="text-[#0F172A] dark:text-white">Explanation:</strong> {q.explanation}
+                  <p className="mt-2 rounded-md border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-2 text-xs leading-relaxed text-[#374151] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+                    <strong className="text-[#111827] dark:text-white">Explanation:</strong> {q.explanation}
                   </p>
                 </div>
               );
@@ -632,58 +630,74 @@ export default function SampleCbtPreview({
     );
   }
 
-  const isTimerWarning = remainingSeconds <= 300;
-
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F6F9] text-[#0F172A] dark:bg-slate-950 dark:text-slate-100">
-      {/* Sticky Top Exam Header */}
-      <header className="sticky top-0 z-30 border-b border-[#E2E8F0] bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between gap-2 px-4">
-          <div className="flex min-w-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Exit CBT preview"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:text-white dark:hover:bg-slate-800"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-            <div className="min-w-0">
-              <p className="truncate font-display text-sm font-bold text-[#0F172A] dark:text-white">
-                JAMB UTME CBT Preview
-              </p>
-              <p className="truncate font-mono text-[11px] text-[#475569] tabular-nums dark:text-slate-400">
-                {answeredCount}/{questions.length} Answered
-              </p>
+    <div className="flex min-h-screen flex-col bg-[#F2F4F7] text-[#111827] dark:bg-slate-950 dark:text-slate-100">
+      {/* Deep Green Official CBT Header */}
+      <header className="sticky top-0 z-30 border-b border-[#CBD5E1] bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="bg-[#0B5E2E] text-white">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <BrandEmblem sizeClass="h-9 w-9" />
+              <div className="min-w-0">
+                <p className="truncate font-display text-sm font-bold text-white sm:text-base">
+                  Pre-JAMB Academy CBT
+                </p>
+                <p className="truncate text-[11px] font-medium text-emerald-100">
+                  UTME Practice Examination Preview
+                </p>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+              <div className="hidden text-right sm:block">
+                <p className="text-xs font-bold text-white uppercase">Candidate: {candidateName}</p>
+                <p className="font-mono text-[11px] text-emerald-100 tabular-nums">
+                  Reg. No: {registrationNumber}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex min-h-[38px] items-center gap-1.5 rounded-md border border-white/40 bg-[#094D25] px-3 text-xs font-bold text-white hover:bg-[#084722]"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Exit</span>
+              </button>
             </div>
           </div>
+        </div>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <div
-              aria-label="Countdown timer"
-              className={`flex h-10 items-center gap-1.5 rounded-lg border px-2.5 font-mono text-sm font-bold tabular-nums ${
-                isTimerWarning
-                  ? 'border-[#B45309] bg-amber-50 text-[#B45309] dark:bg-amber-950/60 dark:text-amber-300'
-                  : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-white'
-              }`}
-            >
-              <Clock className="h-3.5 w-3.5 shrink-0" />
-              <span>{formatDuration(remainingSeconds)}</span>
+        {/* Light Grey Sub-Header */}
+        <div className="border-b border-[#CBD5E1] bg-[#F3F4F6] dark:border-slate-800 dark:bg-slate-900">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-5">
+            <span className="font-display text-sm font-bold text-[#111827] sm:text-base dark:text-white">
+              {currentQuestion?.subjectName}
+            </span>
+
+            <div className="flex shrink-0 items-center gap-2">
+              <div className="flex h-9 items-center gap-2 rounded-md border border-[#CBD5E1] bg-white px-3 dark:border-slate-700 dark:bg-slate-800">
+                <span className="hidden text-xs font-semibold text-[#374151] sm:inline dark:text-slate-300">
+                  Time Remaining:
+                </span>
+                <span className="font-mono text-sm font-bold text-[#DC2626] tabular-nums sm:text-base dark:text-rose-400">
+                  {formatDuration(remainingSeconds)}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(true)}
+                className="inline-flex h-9 items-center justify-center rounded-md bg-[#0B5E2E] px-3.5 text-xs font-bold text-white hover:bg-[#084722]"
+              >
+                Submit
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowConfirmModal(true)}
-              className="min-h-[40px] rounded-lg bg-[#1D4ED8] px-3.5 text-xs font-bold text-white hover:bg-blue-800"
-            >
-              Submit
-            </button>
           </div>
         </div>
 
         {/* 4-Subject Switcher Tabs */}
-        <div className="border-t border-[#E2E8F0] bg-[#F8FAFC] dark:border-slate-800 dark:bg-slate-950">
-          <div className="mx-auto flex max-w-4xl items-center gap-1.5 overflow-x-auto px-4 py-2">
+        <div className="bg-white dark:bg-slate-950">
+          <div className="mx-auto flex max-w-7xl items-center gap-1.5 overflow-x-auto px-4 py-1.5 sm:px-5">
             {subjectMeta.map((sub) => {
               const active = currentQuestion?.subjectCode === sub.code;
               return (
@@ -691,16 +705,16 @@ export default function SampleCbtPreview({
                   key={sub.code}
                   type="button"
                   onClick={() => setCurrentIndex(sub.firstIndex)}
-                  className={`flex min-h-[38px] shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
+                  className={`flex min-h-[34px] shrink-0 items-center gap-2 rounded-md border px-3 py-1 text-xs font-bold whitespace-nowrap ${
                     active
-                      ? 'border-[#1D4ED8] bg-[#1D4ED8] text-white'
-                      : 'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
+                      ? 'border-[#0B5E2E] bg-[#0B5E2E] text-white'
+                      : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#111827] hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
                   }`}
                 >
                   <span>{sub.name}</span>
                   <span
                     className={`font-mono text-[11px] tabular-nums ${
-                      active ? 'text-blue-100' : 'text-[#475569] dark:text-slate-400'
+                      active ? 'text-emerald-100' : 'text-[#4B5563] dark:text-slate-400'
                     }`}
                   >
                     {sub.answered}/{sub.total}
@@ -712,95 +726,218 @@ export default function SampleCbtPreview({
         </div>
       </header>
 
-      {/* Main Question Stage */}
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-4 pb-24">
-        {currentQuestion && (
-          <div className="rounded-[14px] border border-[#E2E8F0] bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3 dark:border-slate-800">
+      {/* Main Two-Column CBT Stage */}
+      <main className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-4 pb-24 sm:px-5 lg:grid-cols-12 lg:py-5 lg:pb-6">
+        <section className="lg:col-span-8">
+          {currentQuestion && (
+            <div className="flex h-full flex-col justify-between overflow-hidden rounded-md border border-[#CBD5E1] bg-white dark:border-slate-800 dark:bg-slate-900">
               <div>
-                <h1 className="font-display text-base font-bold text-[#0F172A] sm:text-lg dark:text-white">
-                  {currentQuestion.subjectName} — Question {subjectPosition.pos} of {subjectPosition.total}
-                </h1>
-                <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
-                  Item {currentIndex + 1} of {questions.length} · {currentQuestion.topic}
-                  {currentQuestion.year ? ` · UTME ${currentQuestion.year}` : ''}
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#CBD5E1] bg-[#DCEAFB] px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="font-display text-sm font-bold text-[#111827] sm:text-base dark:text-white">
+                      Question {subjectPosition.pos} of {subjectPosition.total}
+                    </h1>
+                    <span className="text-xs font-medium text-[#374151] dark:text-slate-300">
+                      ({currentQuestion.topic}
+                      {currentQuestion.year ? ` · UTME ${currentQuestion.year}` : ''})
+                    </span>
+                  </div>
+                  {answers[currentQuestion.id] && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAnswers((prev) => {
+                          const next = { ...prev };
+                          delete next[currentQuestion.id];
+                          return next;
+                        })
+                      }
+                      className="min-h-[30px] rounded-md border border-[#94A3B8] bg-white px-2.5 text-xs font-semibold text-[#111827] hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+                    >
+                      Clear Answer
+                    </button>
+                  )}
+                </div>
+
+                <div className="p-4 sm:p-6">
+                  <p className="mb-5 text-base leading-[1.65] font-medium whitespace-pre-line text-[#111827] sm:text-[17px] dark:text-slate-100">
+                    {currentQuestion.questionText}
+                  </p>
+
+                  <div className="space-y-2.5" role="radiogroup" aria-label="Answer choices">
+                    {currentQuestion.options.map((opt) => {
+                      const selected = answers[currentQuestion.id] === opt.label;
+                      return (
+                        <label
+                          key={opt.label}
+                          className={`flex min-h-[48px] w-full cursor-pointer items-center gap-3 rounded-md border px-3.5 py-2.5 ${
+                            selected
+                              ? 'border-[#0B5E2E] bg-emerald-50 text-[#111827] dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-white'
+                              : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F9FAFB] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name={`sample-${currentQuestion.id}`}
+                            checked={selected}
+                            onChange={() =>
+                              setAnswers((prev) => ({
+                                ...prev,
+                                [currentQuestion.id]: opt.label,
+                              }))
+                            }
+                            className="h-4 w-4 shrink-0 accent-[#0B5E2E]"
+                          />
+                          <span className="font-mono text-sm font-bold text-[#111827] dark:text-white">
+                            {opt.label}.
+                          </span>
+                          <span className="text-sm whitespace-pre-line sm:text-base">{opt.text}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-              {answers[currentQuestion.id] && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAnswers((prev) => {
-                      const next = { ...prev };
-                      delete next[currentQuestion.id];
-                      return next;
-                    })
-                  }
-                  className="min-h-[36px] rounded-lg border border-[#E2E8F0] px-2.5 text-xs font-semibold text-[#475569] hover:bg-[#F8FAFC] dark:border-slate-700 dark:text-slate-300"
-                >
-                  Clear Choice
-                </button>
-              )}
-            </div>
 
-            <p className="mt-4 mb-5 text-base leading-[1.65] font-medium text-[#0F172A] sm:text-[17px] dark:text-slate-100">
-              {currentQuestion.questionText}
-            </p>
-
-            {/* Full-Width Tappable Option Cards */}
-            <div className="space-y-2.5" role="radiogroup" aria-label="Answer choices">
-              {currentQuestion.options.map((opt) => {
-                const selected = answers[currentQuestion.id] === opt.label;
-                return (
+              <div className="hidden border-t border-[#E5E7EB] bg-[#F9FAFB] px-6 py-4 lg:flex lg:items-center lg:justify-between dark:border-slate-800 dark:bg-slate-950">
+                <div className="flex items-center gap-2.5">
                   <button
-                    key={opt.label}
                     type="button"
-                    role="radio"
-                    aria-checked={selected}
+                    disabled={currentIndex === 0}
+                    onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+                    className="inline-flex min-h-[42px] items-center justify-center rounded-md bg-[#0B5E2E] px-5 py-2 text-sm font-bold text-white hover:bg-[#084722] disabled:opacity-45"
+                  >
+                    &lt;&lt; Previous
+                  </button>
+                  <button
+                    type="button"
                     onClick={() =>
-                      setAnswers((prev) => ({
+                      currentQuestion &&
+                      setMarked((prev) => ({
                         ...prev,
-                        [currentQuestion.id]: opt.label,
+                        [currentQuestion.id]: !prev[currentQuestion.id],
                       }))
                     }
-                    className={`flex min-h-[52px] w-full items-center gap-3.5 rounded-[12px] border px-3.5 py-3 text-left ${
-                      selected
-                        ? 'border-[#1D4ED8] bg-blue-50 text-[#0F172A] dark:border-blue-500 dark:bg-blue-950/60 dark:text-white'
-                        : 'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
+                    className={`inline-flex min-h-[42px] items-center gap-1.5 rounded-md border px-4 py-2 text-sm font-semibold ${
+                      currentQuestion && marked[currentQuestion.id]
+                        ? 'border-[#D97706] bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300'
+                        : 'border-[#CBD5E1] bg-white text-[#111827] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
                     }`}
                   >
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border font-mono text-xs font-bold ${
-                        selected
-                          ? 'border-[#1D4ED8] bg-[#1D4ED8] text-white'
-                          : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'
-                      }`}
-                    >
-                      {opt.label}
-                    </span>
-                    <span className="text-sm leading-snug sm:text-base">{opt.text}</span>
+                    <Bookmark className="h-4 w-4" />
+                    <span>{currentQuestion && marked[currentQuestion.id] ? 'Marked' : 'Mark'}</span>
                   </button>
-                );
-              })}
+                </div>
+
+                {currentIndex < questions.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
+                    className="inline-flex min-h-[42px] items-center justify-center rounded-md bg-[#0B5E2E] px-6 py-2 text-sm font-bold text-white hover:bg-[#084722]"
+                  >
+                    Next &gt;&gt;
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmModal(true)}
+                    className="inline-flex min-h-[42px] items-center justify-center rounded-md bg-[#0B5E2E] px-6 py-2 text-sm font-bold text-white hover:bg-[#084722]"
+                  >
+                    Submit Examination
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Question Palette (Desktop right column + Mobile/Tablet inline below question) */}
+        <aside className="lg:col-span-4">
+          <div className="overflow-hidden rounded-md border border-[#CBD5E1] bg-white lg:sticky lg:top-28 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between bg-[#0B5E2E] px-4 py-2.5 text-white">
+              <h2 className="font-display text-sm font-bold">Question Palette</h2>
+              <span className="font-mono text-xs font-semibold text-emerald-100 tabular-nums">
+                {answeredCount}/{questions.length}
+              </span>
+            </div>
+
+            <div className="p-4">
+              <div className="grid grid-cols-4 gap-1.5">
+                {questions.map((q, idx) => {
+                  const isCurrent = idx === currentIndex;
+                  const isAnswered = Boolean(answers[q.id]);
+                  const isMarked = Boolean(marked[q.id]);
+                  let cls =
+                    'border-[#CBD5E1] bg-white text-[#111827] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+                  if (isCurrent) cls = 'border-[#2563EB] bg-[#2563EB] text-white';
+                  else if (isMarked) cls = 'border-[#D97706] bg-[#D97706] text-white';
+                  else if (isAnswered) cls = 'border-[#16A34A] bg-[#16A34A] text-white';
+                  return (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`flex h-9 items-center justify-center rounded-sm border font-mono text-xs font-bold tabular-nums ${cls}`}
+                    >
+                      {idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 space-y-1.5 border-t border-[#E5E7EB] pt-3 text-xs dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="h-3.5 w-3.5 rounded-xs bg-[#2563EB]" />
+                  <span className="text-[#374151] dark:text-slate-300">Current</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-3.5 w-3.5 rounded-xs bg-[#16A34A]" />
+                  <span className="text-[#374151] dark:text-slate-300">Answered ({answeredCount})</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-3.5 w-3.5 rounded-xs border border-[#94A3B8] bg-white dark:bg-slate-800" />
+                  <span className="text-[#374151] dark:text-slate-300">Not Answered ({unansweredCount})</span>
+                </div>
+                {markedCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="h-3.5 w-3.5 rounded-xs bg-[#D97706]" />
+                    <span className="text-[#374151] dark:text-slate-300">Marked ({markedCount})</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(true)}
+                className="mt-4 min-h-[42px] w-full rounded-md bg-[#0B5E2E] py-2 text-sm font-bold text-white hover:bg-[#084722]"
+              >
+                Submit Examination
+              </button>
             </div>
           </div>
-        )}
+        </aside>
       </main>
 
-      {/* Sticky Bottom Controls Bar */}
+      <footer className="hidden border-t border-[#CBD5E1] bg-[#E5E7EB] px-5 py-2.5 text-xs text-[#374151] lg:block dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <span className="font-semibold">JAMB UTME CBT Examination</span>
+          <span className="font-semibold text-[#0B5E2E] dark:text-emerald-400">Pre-JAMB Academy CBT</span>
+        </div>
+      </footer>
+
+      {/* Mobile Fixed Controls */}
       <nav
         aria-label="Exam navigation controls"
-        className="fixed right-0 bottom-0 left-0 z-30 border-t border-[#E2E8F0] bg-white px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900"
+        className="fixed right-0 bottom-0 left-0 z-30 border-t border-[#CBD5E1] bg-white px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:hidden dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="mx-auto grid max-w-4xl grid-cols-4 gap-2">
           <button
             type="button"
             disabled={currentIndex === 0}
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border border-[#E2E8F0] bg-white text-xs font-semibold text-[#0F172A] disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            className="flex min-h-[44px] items-center justify-center rounded-md border border-[#CBD5E1] bg-white text-xs font-bold text-[#111827] disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
-            <ChevronLeft className="h-4 w-4" />
-            <span>Prev</span>
+            &lt;&lt; Prev
           </button>
 
           <button
@@ -812,10 +949,10 @@ export default function SampleCbtPreview({
                 [currentQuestion.id]: !prev[currentQuestion.id],
               }))
             }
-            className={`flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border text-xs font-semibold ${
+            className={`flex min-h-[44px] items-center justify-center gap-1 rounded-md border text-xs font-bold ${
               currentQuestion && marked[currentQuestion.id]
-                ? 'border-[#B45309] bg-amber-50 text-[#B45309] dark:bg-amber-950/60 dark:text-amber-300'
-                : 'border-[#E2E8F0] bg-white text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                ? 'border-[#D97706] bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300'
+                : 'border-[#CBD5E1] bg-white text-[#111827] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
             }`}
           >
             <Bookmark className="h-3.5 w-3.5" />
@@ -825,26 +962,25 @@ export default function SampleCbtPreview({
           <button
             type="button"
             onClick={() => setShowGridDrawer(true)}
-            className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-semibold text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            className="flex min-h-[44px] items-center justify-center gap-1 rounded-md border border-[#CBD5E1] bg-[#F2F4F7] text-xs font-bold text-[#111827] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
-            <Grid className="h-3.5 w-3.5" />
-            <span>Grid</span>
+            <Grid className="h-3.5 w-3.5 text-[#0B5E2E]" />
+            <span>Palette</span>
           </button>
 
           {currentIndex < questions.length - 1 ? (
             <button
               type="button"
               onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-              className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] bg-[#1D4ED8] text-xs font-semibold text-white hover:bg-blue-800"
+              className="flex min-h-[44px] items-center justify-center rounded-md bg-[#0B5E2E] text-xs font-bold text-white hover:bg-[#084722]"
             >
-              <span>Next</span>
-              <ChevronRight className="h-4 w-4" />
+              Next &gt;&gt;
             </button>
           ) : (
             <button
               type="button"
               onClick={() => setShowConfirmModal(true)}
-              className="flex min-h-[44px] items-center justify-center rounded-[10px] bg-[#15803D] text-xs font-semibold text-white hover:bg-emerald-800"
+              className="flex min-h-[44px] items-center justify-center rounded-md bg-[#0B5E2E] text-xs font-bold text-white hover:bg-[#084722]"
             >
               Submit
             </button>
@@ -852,7 +988,7 @@ export default function SampleCbtPreview({
         </div>
       </nav>
 
-      {/* Question Grid Drawer */}
+      {/* Mobile Palette Drawer */}
       {showGridDrawer && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50"
@@ -860,36 +996,32 @@ export default function SampleCbtPreview({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-t-[16px] border-t border-[#E2E8F0] bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900"
+            className="w-full max-w-lg rounded-t-lg border-t border-[#CBD5E1] bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900"
           >
-            <div className="mb-3 flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 dark:border-slate-800">
-              <h3 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">
-                Question Grid ({answeredCount}/{questions.length} Answered)
+            <div className="mb-3 flex items-center justify-between border-b border-[#E5E7EB] pb-2.5 dark:border-slate-800">
+              <h3 className="font-display text-sm font-bold text-[#0B5E2E] dark:text-emerald-400">
+                Question Palette ({answeredCount}/{questions.length} Answered)
               </h3>
               <button
                 type="button"
                 onClick={() => setShowGridDrawer(false)}
-                aria-label="Close question grid"
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-[#475569] hover:bg-[#F8FAFC] dark:text-slate-300"
+                aria-label="Close question palette"
+                className="flex h-10 w-10 items-center justify-center rounded-md text-[#4B5563] hover:bg-slate-100 dark:text-slate-300"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="grid max-h-60 grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-6">
+            <div className="grid max-h-60 grid-cols-5 gap-2 overflow-y-auto">
               {questions.map((q, idx) => {
                 const isCurrent = idx === currentIndex;
                 const isAnswered = Boolean(answers[q.id]);
                 const isMarked = Boolean(marked[q.id]);
                 let cls =
-                  'border-[#E2E8F0] bg-white text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
-                if (isCurrent) {
-                  cls = 'border-[#1D4ED8] bg-[#1D4ED8] text-white';
-                } else if (isMarked) {
-                  cls = 'border-[#B45309] bg-[#B45309] text-white';
-                } else if (isAnswered) {
-                  cls = 'border-[#15803D] bg-[#15803D] text-white';
-                }
+                  'border-[#CBD5E1] bg-white text-[#111827] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+                if (isCurrent) cls = 'border-[#2563EB] bg-[#2563EB] text-white';
+                else if (isMarked) cls = 'border-[#D97706] bg-[#D97706] text-white';
+                else if (isAnswered) cls = 'border-[#16A34A] bg-[#16A34A] text-white';
                 return (
                   <button
                     key={q.id}
@@ -898,7 +1030,7 @@ export default function SampleCbtPreview({
                       setCurrentIndex(idx);
                       setShowGridDrawer(false);
                     }}
-                    className={`flex h-11 items-center justify-center rounded-lg border font-mono text-xs font-bold tabular-nums ${cls}`}
+                    className={`flex h-11 items-center justify-center rounded-sm border font-mono text-xs font-bold tabular-nums ${cls}`}
                   >
                     {idx + 1}
                   </button>
@@ -906,18 +1038,18 @@ export default function SampleCbtPreview({
               })}
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-3 border-t border-[#E2E8F0] pt-3 text-xs text-[#475569] dark:border-slate-800 dark:text-slate-400">
+            <div className="mt-3 flex flex-wrap gap-3 border-t border-[#E5E7EB] pt-3 text-xs text-[#374151] dark:border-slate-800 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs bg-[#15803D]" /> Answered ({answeredCount})
+                <span className="h-3 w-3 rounded-xs bg-[#2563EB]" /> Current
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs border border-slate-400 bg-white dark:bg-slate-800" /> Open ({unansweredCount})
+                <span className="h-3 w-3 rounded-xs bg-[#16A34A]" /> Answered ({answeredCount})
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs bg-[#B45309]" /> Marked ({markedCount})
+                <span className="h-3 w-3 rounded-xs border border-[#94A3B8] bg-white dark:bg-slate-800" /> Not Answered ({unansweredCount})
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs bg-[#1D4ED8]" /> Current
+                <span className="h-3 w-3 rounded-xs bg-[#D97706]" /> Marked ({markedCount})
               </span>
             </div>
           </div>
@@ -927,28 +1059,28 @@ export default function SampleCbtPreview({
       {/* Submission Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-          <div className="w-full max-w-md rounded-[14px] border border-[#E2E8F0] bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h3 className="font-display text-lg font-bold text-[#0F172A] dark:text-white">
-              Are you sure you want to submit your examination?
+          <div className="w-full max-w-md rounded-md border border-[#CBD5E1] bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="font-display text-lg font-bold text-[#111827] dark:text-white">
+              Submit Sample Examination?
             </h3>
-            <p className="mt-1 text-sm text-[#475569] dark:text-slate-400">
+            <p className="mt-1 text-sm text-[#4B5563] dark:text-slate-400">
               Review your progress below before viewing your sample UTME score.
             </p>
 
-            <div className="mt-4 grid grid-cols-3 rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] text-center dark:border-slate-800 dark:bg-slate-950">
-              <div className="border-r border-[#E2E8F0] p-3 dark:border-slate-800">
-                <p className="font-mono text-lg font-bold text-[#15803D] tabular-nums">{answeredCount}</p>
-                <p className="text-xs text-[#475569] dark:text-slate-400">Answered</p>
+            <div className="mt-4 grid grid-cols-3 rounded-md border border-[#CBD5E1] bg-[#F2F4F7] text-center dark:border-slate-800 dark:bg-slate-950">
+              <div className="border-r border-[#CBD5E1] p-3 dark:border-slate-800">
+                <p className="font-mono text-lg font-bold text-[#16A34A] tabular-nums">{answeredCount}</p>
+                <p className="text-xs text-[#4B5563] dark:text-slate-400">Answered</p>
               </div>
-              <div className="border-r border-[#E2E8F0] p-3 dark:border-slate-800">
-                <p className="font-mono text-lg font-bold text-[#0F172A] tabular-nums dark:text-white">
+              <div className="border-r border-[#CBD5E1] p-3 dark:border-slate-800">
+                <p className="font-mono text-lg font-bold text-[#111827] tabular-nums dark:text-white">
                   {unansweredCount}
                 </p>
-                <p className="text-xs text-[#475569] dark:text-slate-400">Unanswered</p>
+                <p className="text-xs text-[#4B5563] dark:text-slate-400">Not Answered</p>
               </div>
               <div className="p-3">
-                <p className="font-mono text-lg font-bold text-[#B45309] tabular-nums">{markedCount}</p>
-                <p className="text-xs text-[#475569] dark:text-slate-400">Marked</p>
+                <p className="font-mono text-lg font-bold text-[#D97706] tabular-nums">{markedCount}</p>
+                <p className="text-xs text-[#4B5563] dark:text-slate-400">Marked</p>
               </div>
             </div>
 
@@ -956,7 +1088,7 @@ export default function SampleCbtPreview({
               <button
                 type="button"
                 onClick={() => setShowConfirmModal(false)}
-                className="min-h-[44px] rounded-[10px] border border-[#E2E8F0] bg-white px-3 text-xs font-semibold text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                className="min-h-[44px] rounded-md border border-[#CBD5E1] bg-white px-3 text-xs font-bold text-[#111827] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
                 Continue Exam
               </button>
@@ -966,7 +1098,7 @@ export default function SampleCbtPreview({
                   setShowConfirmModal(false);
                   setSubmitted(true);
                 }}
-                className="min-h-[44px] rounded-[10px] bg-[#1D4ED8] px-3 text-xs font-bold text-white hover:bg-blue-800"
+                className="min-h-[44px] rounded-md bg-[#0B5E2E] px-3 text-xs font-bold text-white hover:bg-[#084722]"
               >
                 Submit Exam
               </button>

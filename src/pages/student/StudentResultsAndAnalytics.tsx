@@ -115,7 +115,7 @@ export function ResultsView({
           <button
             type="button"
             onClick={() => downloadResultPdf(r, student)}
-            className="inline-flex min-h-[40px] items-center gap-2 rounded-md bg-[#0F2447] px-4 text-sm font-semibold text-white hover:bg-[#173566]"
+            className="inline-flex min-h-[40px] items-center gap-2 rounded-md bg-[#0B5E2E] px-4 text-sm font-semibold text-white hover:bg-[#084722]"
           >
             <Download className="h-4 w-4" />
             <span>Download Result Slip (PDF)</span>
@@ -125,10 +125,10 @@ export function ResultsView({
         {/* Examination Result Slip */}
         <div className="rounded-lg border border-slate-300 bg-white dark:border-slate-800 dark:bg-slate-900">
           <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-            <p className="text-xs font-semibold tracking-wide text-[#1D4ED8] uppercase dark:text-blue-400">
-              Acadet CBT JAMB — Examination Result
+            <p className="text-xs font-semibold tracking-wide text-[#0B5E2E] uppercase dark:text-emerald-400">
+              Pre-JAMB Academy CBT — Examination Result
             </p>
-            <h1 className="mt-1 font-display text-xl font-bold text-[#0F2447] dark:text-white">{r.examTitle}</h1>
+            <h1 className="mt-1 font-display text-xl font-bold text-[#0B5E2E] dark:text-white">{r.examTitle}</h1>
             <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
               <span>
                 <strong className="text-slate-900 dark:text-white">Candidate Name:</strong> {student.fullName}
@@ -152,15 +152,15 @@ export function ResultsView({
 
           {/* Score Summary Row */}
           <div className="grid grid-cols-2 divide-y divide-slate-200 border-b border-slate-200 sm:grid-cols-5 sm:divide-x sm:divide-y-0 dark:divide-slate-800 dark:border-slate-800">
-            <div className="bg-blue-50/50 p-4 dark:bg-blue-950/30">
+            <div className="bg-emerald-50/50 p-4 dark:bg-emerald-950/30">
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Total Score</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-[#0F2447] tabular-nums dark:text-blue-300">
+              <p className="mt-1 font-mono text-2xl font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-300">
                 {r.scoreOutOf400}/400
               </p>
             </div>
             <div className="p-4">
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Percentage</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-[#1D4ED8] tabular-nums dark:text-blue-400">
+              <p className="mt-1 font-mono text-2xl font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
                 {Number(r.percentage).toFixed(1)}%
               </p>
             </div>
@@ -186,7 +186,7 @@ export function ResultsView({
 
           {/* Subject-by-Subject Performance Table */}
           <div className="p-5">
-            <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">
+            <h2 className="font-display text-sm font-bold text-[#0B5E2E] dark:text-white">
               Subject Performance Table
             </h2>
             <div className="mt-3 overflow-x-auto rounded-md border border-slate-200 dark:border-slate-800">
@@ -211,7 +211,7 @@ export function ResultsView({
                       <td className="px-4 py-2.5 text-right font-mono text-xs font-semibold text-emerald-700 tabular-nums dark:text-emerald-400">
                         {b.correctCount}
                       </td>
-                      <td className="px-4 py-2.5 text-right font-mono text-xs font-bold text-[#0F2447] tabular-nums dark:text-white">
+                      <td className="px-4 py-2.5 text-right font-mono text-xs font-bold text-[#0B5E2E] tabular-nums dark:text-white">
                         {Number(b.percentage).toFixed(1)}%
                       </td>
                     </tr>
@@ -225,7 +225,7 @@ export function ResultsView({
         {/* Question Review & Explanations */}
         {selectedDetail.session.allowReview ? (
           <div className="space-y-3.5">
-            <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">
+            <h2 className="font-display text-base font-bold text-[#0B5E2E] dark:text-white">
               Answer Review
             </h2>
             {selectedDetail.reviewItems.map((item) => (
@@ -303,7 +303,7 @@ export function ResultsView({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">My Results</h1>
+        <h1 className="font-display text-xl font-bold text-[#0B5E2E] sm:text-2xl dark:text-white">My Results</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           View your completed examination scores, subject breakdowns, and explanations.
         </p>
@@ -344,7 +344,7 @@ export function ResultsView({
                     <td className="px-4 py-3 text-right font-mono text-xs tabular-nums">
                       {r.correctCount}/{r.totalQuestions}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono font-bold text-[#0F2447] tabular-nums dark:text-blue-400">
+                    <td className="px-4 py-3 text-right font-mono font-bold text-[#0B5E2E] tabular-nums dark:text-blue-400">
                       {r.scoreOutOf400}
                     </td>
                     <td className="px-4 py-3 text-right font-mono font-bold text-emerald-700 tabular-nums dark:text-emerald-400">
@@ -363,7 +363,7 @@ export function ResultsView({
                         <button
                           type="button"
                           onClick={() => downloadResultPdf(r, student)}
-                          className="inline-flex min-h-[34px] items-center gap-1 rounded-md bg-[#0F2447] px-2.5 text-xs font-semibold text-white hover:bg-[#173566]"
+                          className="inline-flex min-h-[34px] items-center gap-1 rounded-md bg-[#0B5E2E] px-2.5 text-xs font-semibold text-white hover:bg-[#084722]"
                         >
                           <Download className="h-3.5 w-3.5" />
                           <span>PDF</span>
@@ -406,7 +406,7 @@ export function AnalyticsView() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">Performance Summary</h1>
+        <h1 className="font-display text-xl font-bold text-[#0B5E2E] sm:text-2xl dark:text-white">Performance Summary</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Review your scores across each subject and recent examination attempts.
         </p>
@@ -424,7 +424,7 @@ export function AnalyticsView() {
           {/* Subject Accuracy Table */}
           <div className="rounded-lg border border-slate-300 bg-white dark:border-slate-800 dark:bg-slate-900">
             <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-              <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">Performance by Subject</h2>
+              <h2 className="font-display text-sm font-bold text-[#0B5E2E] dark:text-white">Performance by Subject</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
@@ -449,7 +449,7 @@ export function AnalyticsView() {
                           s.accuracy >= 70
                             ? 'text-emerald-700 dark:text-emerald-400'
                             : s.accuracy >= 50
-                            ? 'text-[#1D4ED8] dark:text-blue-400'
+                            ? 'text-[#0B5E2E] dark:text-emerald-400'
                             : 'text-amber-700 dark:text-amber-400'
                         }`}
                       >
@@ -465,7 +465,7 @@ export function AnalyticsView() {
           {/* Attempt History Table */}
           <div className="rounded-lg border border-slate-300 bg-white dark:border-slate-800 dark:bg-slate-900">
             <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-              <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">Recent Attempts</h2>
+              <h2 className="font-display text-sm font-bold text-[#0B5E2E] dark:text-white">Recent Attempts</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
@@ -482,7 +482,7 @@ export function AnalyticsView() {
                     <tr key={pt.attemptNumber}>
                       <td className="px-4 py-2.5 font-mono text-xs text-slate-500">#{pt.attemptNumber}</td>
                       <td className="px-4 py-2.5 font-medium text-slate-900 dark:text-white">{pt.examTitle}</td>
-                      <td className="px-4 py-2.5 text-right font-mono text-xs font-bold text-[#0F2447] tabular-nums dark:text-blue-400">
+                      <td className="px-4 py-2.5 text-right font-mono text-xs font-bold text-[#0B5E2E] tabular-nums dark:text-blue-400">
                         {pt.scoreOutOf400}
                       </td>
                       <td className="px-4 py-2.5 text-right font-mono text-xs font-bold text-emerald-700 tabular-nums dark:text-emerald-400">

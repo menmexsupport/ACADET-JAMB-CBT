@@ -3,16 +3,15 @@ import {
   AlertTriangle,
   Bookmark,
   Calculator,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
   Grid,
   HelpCircle,
+  LogOut,
   X,
 } from 'lucide-react';
 import { apiFetch } from '../../lib/api.ts';
 import { formatDuration } from '../../lib/pdfReport.ts';
 import { AuthUser, ExamQuestionItem, ExamSessionDetail, UserPreferences } from '../../types/index.ts';
+import BrandEmblem from '../common/BrandEmblem.tsx';
 import CalculatorModal from './CalculatorModal.tsx';
 
 interface ExamHallProps {
@@ -181,7 +180,7 @@ export default function ExamHall({
     }
   }, [currentQuestion, session, sessionId]);
 
-  // Standard 8-key CBT keyboard shortcuts
+  // Standard CBT keyboard shortcuts
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (showCalculator || showConfirmSubmit || showInstructions) return;
@@ -284,10 +283,10 @@ export default function ExamHall({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F4F6F8] dark:bg-slate-950">
-        <div className="rounded-lg border border-slate-300 bg-white px-8 py-6 text-center dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-            Loading Examination...
+      <div className="flex min-h-screen items-center justify-center bg-[#F2F4F7] dark:bg-slate-950">
+        <div className="rounded-md border border-[#CBD5E1] bg-white px-8 py-6 text-center dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm font-semibold text-[#111827] dark:text-slate-200">
+            Loading Examination Session...
           </p>
         </div>
       </div>
@@ -296,17 +295,17 @@ export default function ExamHall({
 
   if (error && !session) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F4F6F8] p-4 dark:bg-slate-950">
-        <div className="max-w-md rounded-lg border border-rose-300 bg-white p-6 text-center dark:border-rose-900 dark:bg-slate-900">
+      <div className="flex min-h-screen items-center justify-center bg-[#F2F4F7] p-4 dark:bg-slate-950">
+        <div className="max-w-md rounded-md border border-rose-300 bg-white p-6 text-center dark:border-rose-900 dark:bg-slate-900">
           <AlertTriangle className="mx-auto mb-3 h-9 w-9 text-rose-700" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Examination Unavailable</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{error}</p>
+          <h2 className="text-base font-bold text-[#111827] dark:text-white">Examination Unavailable</h2>
+          <p className="mt-1 text-sm text-[#4B5563] dark:text-slate-400">{error}</p>
           <button
             type="button"
             onClick={onExitToDashboard}
-            className="mt-4 min-h-[44px] rounded-md bg-[#0F2447] px-4 py-2 text-sm font-semibold text-white"
+            className="mt-4 min-h-[44px] rounded-md bg-[#0B5E2E] px-4 py-2 text-sm font-bold text-white hover:bg-[#084722]"
           >
-            Back to Home
+            Back to Dashboard
           </button>
         </div>
       </div>
@@ -315,137 +314,157 @@ export default function ExamHall({
 
   if (!session || !currentQuestion) return null;
 
-  const timerUrgent = session.examMode === 'timed' && remainingSeconds <= 300;
-  const timerWarning = session.examMode === 'timed' && remainingSeconds > 300 && remainingSeconds <= 600;
   const showPaletteDefault = preferences?.showQuestionPalette !== false;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F6F9] text-[#0F172A] dark:bg-slate-950 dark:text-slate-100">
-      {/* Top Examination Bar */}
-      <header className="sticky top-0 z-30 border-b border-[#E2E8F0] bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-5">
-          {/* Exam Identity & Status */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="hidden text-xs font-bold tracking-wide text-[#1D4ED8] sm:inline dark:text-blue-400">
-                Acadet CBT JAMB
-              </span>
-              <span className="hidden text-slate-300 sm:inline dark:text-slate-700">|</span>
-              <p className="truncate font-display text-sm font-bold text-[#0F172A] dark:text-white">
-                {session.examTitle}
-              </p>
+    <div className="flex min-h-screen flex-col bg-[#F2F4F7] text-[#111827] dark:bg-slate-950 dark:text-slate-100">
+      {/* Official Deep Green CBT Header */}
+      <header className="sticky top-0 z-30 border-b border-[#CBD5E1] bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="bg-[#0B5E2E] text-white">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <BrandEmblem sizeClass="h-9 w-9" />
+              <div className="min-w-0">
+                <p className="truncate font-display text-sm font-bold text-white sm:text-base">
+                  Pre-JAMB Academy CBT
+                </p>
+                <p className="truncate text-[11px] font-medium text-emerald-100">
+                  {session.examTitle}
+                </p>
+              </div>
             </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-[#475569] dark:text-slate-400">
+
+            <div className="flex shrink-0 items-center gap-3 sm:gap-4">
               {candidate && (
-                <>
-                  <span className="hidden font-semibold text-[#0F172A] sm:inline dark:text-slate-200">{candidate.fullName}</span>
-                  <span className="hidden sm:inline" aria-hidden="true">·</span>
-                </>
+                <div className="hidden text-right sm:block">
+                  <p className="text-xs font-bold text-white uppercase">
+                    Candidate: {candidate.fullName}
+                  </p>
+                  <p className="font-mono text-[11px] text-emerald-100 tabular-nums">
+                    Reg. No: {candidate.registrationNumber}
+                  </p>
+                </div>
               )}
-              <span className="font-mono tabular-nums">
-                {counts.answered}/{counts.total} Answered
-              </span>
-              <span aria-hidden="true">·</span>
-              <span className={savingStatus === 'error' ? 'font-semibold text-rose-700' : 'font-semibold text-[#15803D] dark:text-emerald-400'}>
-                {savingStatus === 'saving'
-                  ? 'Saving...'
-                  : savingStatus === 'saved'
-                  ? 'Saved'
-                  : savingStatus === 'error'
-                  ? 'Save failed'
-                  : 'Auto-save ready'}
-              </span>
+              <button
+                type="button"
+                onClick={onExitToDashboard}
+                className="inline-flex min-h-[38px] items-center gap-1.5 rounded-md border border-white/40 bg-[#094D25] px-3 text-xs font-bold text-white hover:bg-[#084722]"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Exit</span>
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Countdown Timer & Exam Tools */}
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            {session.examMode === 'timed' ? (
-              <div
-                aria-label="Countdown timer"
-                className={`flex h-10 items-center gap-1.5 rounded-lg border px-2.5 font-mono text-sm font-bold tabular-nums sm:px-3 ${
-                  timerUrgent || timerWarning
-                    ? 'border-[#B45309] bg-amber-50 text-[#B45309] dark:border-amber-600 dark:bg-amber-950/60 dark:text-amber-300'
-                    : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-white'
-                }`}
+        {/* Light Grey Sub-Header: Active Subject, Countdown Clock, Tools */}
+        <div className="border-b border-[#CBD5E1] bg-[#F3F4F6] dark:border-slate-800 dark:bg-slate-900">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-5">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="font-display text-sm font-bold text-[#111827] sm:text-base dark:text-white">
+                {currentQuestion.subjectName}
+              </span>
+              <span className="text-xs text-[#4B5563] dark:text-slate-400">
+                ({counts.answered}/{counts.total} Answered ·{' '}
+                {savingStatus === 'saving'
+                  ? 'Saving...'
+                  : savingStatus === 'error'
+                  ? 'Save failed'
+                  : 'Saved'}
+                )
+              </span>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              {session.examMode === 'timed' ? (
+                <div
+                  aria-label="Time Remaining"
+                  className="flex h-9 items-center gap-2 rounded-md border border-[#CBD5E1] bg-white px-3 dark:border-slate-700 dark:bg-slate-800"
+                >
+                  <span className="hidden text-xs font-semibold text-[#374151] sm:inline dark:text-slate-300">
+                    Time Remaining:
+                  </span>
+                  <span className="font-mono text-sm font-bold text-[#DC2626] tabular-nums sm:text-base dark:text-rose-400">
+                    {formatDuration(remainingSeconds)}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex h-9 items-center rounded-md border border-emerald-300 bg-emerald-50 px-3 text-xs font-bold text-[#0B5E2E] dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  Study Mode
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setLargeFont((v) => !v)}
+                title="Change text size"
+                className="hidden h-9 items-center justify-center rounded-md border border-[#CBD5E1] bg-white px-2.5 font-mono text-xs font-bold text-[#111827] hover:bg-slate-50 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               >
-                <Clock className="h-3.5 w-3.5 shrink-0" />
-                <span>{formatDuration(remainingSeconds)}</span>
-              </div>
-            ) : (
-              <div className="hidden h-10 items-center rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-[#15803D] sm:flex dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-                Study Mode
-              </div>
-            )}
+                {largeFont ? 'A-' : 'A+'}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setLargeFont((v) => !v)}
-              title="Change text size"
-              className="hidden h-10 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white px-2.5 font-mono text-xs font-bold text-[#0F172A] hover:bg-[#F8FAFC] sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-            >
-              {largeFont ? 'A-' : 'A+'}
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowInstructions(true)}
+                title="Exam Help"
+                className="hidden h-9 items-center gap-1 rounded-md border border-[#CBD5E1] bg-white px-2.5 text-xs font-semibold text-[#111827] hover:bg-slate-50 md:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-[#0B5E2E]" />
+                <span>Help</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setShowInstructions(true)}
-              title="Exam Help"
-              className="hidden h-10 items-center gap-1 rounded-lg border border-[#E2E8F0] bg-white px-2.5 text-xs font-semibold text-[#0F172A] hover:bg-[#F8FAFC] md:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-            >
-              <HelpCircle className="h-3.5 w-3.5" />
-              <span>Help</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowCalculator(true)}
+                aria-label="Open Calculator"
+                className="inline-flex h-9 items-center gap-1 rounded-md border border-[#CBD5E1] bg-white px-2.5 text-xs font-semibold text-[#111827] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              >
+                <Calculator className="h-3.5 w-3.5 text-[#0B5E2E]" />
+                <span className="hidden sm:inline">Calculator</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setShowCalculator(true)}
-              aria-label="Open Calculator"
-              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-white px-2.5 text-xs font-semibold text-[#0F172A] hover:bg-[#F8FAFC] sm:px-3 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-            >
-              <Calculator className="h-4 w-4" />
-              <span className="hidden sm:inline">Calculator</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowConfirmSubmit(true)}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-[#1D4ED8] px-3 text-xs font-bold text-white hover:bg-blue-800 sm:px-3.5"
-            >
-              Submit
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowConfirmSubmit(true)}
+                className="inline-flex h-9 items-center justify-center rounded-md bg-[#0B5E2E] px-3 text-xs font-bold text-white hover:bg-[#084722]"
+              >
+                Submit
+              </button>
+            </div>
           </div>
         </div>
 
         {/* 4-Subject Navigation Tabs */}
-        <div className="border-t border-[#E2E8F0] bg-[#F8FAFC] dark:border-slate-800 dark:bg-slate-950">
-          <div className="mx-auto flex max-w-7xl items-center gap-1.5 overflow-x-auto px-4 py-2 sm:px-5">
-            {subjectSummaries.map((sub) => {
-              const isCurrentSub = currentQuestion.subjectId === sub.id;
-              return (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => jumpToSubject(sub.id)}
-                  className={`flex min-h-[38px] shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
-                    isCurrentSub
-                      ? 'border-[#1D4ED8] bg-[#1D4ED8] text-white'
-                      : 'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
-                  }`}
-                >
-                  <span>{sub.name}</span>
-                  <span
-                    className={`font-mono text-[11px] tabular-nums ${
-                      isCurrentSub ? 'text-blue-100' : 'text-[#475569] dark:text-slate-400'
+        {subjectSummaries.length > 1 && (
+          <div className="bg-white dark:bg-slate-950">
+            <div className="mx-auto flex max-w-7xl items-center gap-1.5 overflow-x-auto px-4 py-1.5 sm:px-5">
+              {subjectSummaries.map((sub) => {
+                const isCurrentSub = currentQuestion.subjectId === sub.id;
+                return (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => jumpToSubject(sub.id)}
+                    className={`flex min-h-[34px] shrink-0 items-center gap-2 rounded-md border px-3 py-1 text-xs font-bold whitespace-nowrap ${
+                      isCurrentSub
+                        ? 'border-[#0B5E2E] bg-[#0B5E2E] text-white'
+                        : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#111827] hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
                     }`}
                   >
-                    {sub.answered}/{sub.total}
-                  </span>
-                </button>
-              );
-            })}
+                    <span>{sub.name}</span>
+                    <span
+                      className={`font-mono text-[11px] tabular-nums ${
+                        isCurrentSub ? 'text-emerald-100' : 'text-[#4B5563] dark:text-slate-400'
+                      }`}
+                    >
+                      {sub.answered}/{sub.total}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </header>
 
       {error && (
@@ -459,113 +478,109 @@ export default function ExamHall({
         </div>
       )}
 
-      {/* Main CBT Question Stage + Navigation Grid */}
+      {/* Main Two-Column CBT Workspace */}
       <main className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-4 pb-24 sm:px-5 lg:grid-cols-12 lg:py-5 lg:pb-6">
-        {/* Question Reading & Options Panel */}
+        {/* Left: Question Area */}
         <section className={showPaletteDefault ? 'lg:col-span-8' : 'lg:col-span-12'}>
-          <div className="flex h-full flex-col justify-between rounded-[14px] border border-[#E2E8F0] bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex h-full flex-col justify-between overflow-hidden rounded-md border border-[#CBD5E1] bg-white dark:border-slate-800 dark:bg-slate-900">
             <div>
-              {/* Question Header */}
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3 dark:border-slate-800">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <h1 className="font-display text-base font-bold text-[#0F172A] sm:text-lg dark:text-white">
-                      {currentQuestion.subjectName} — Question {subjectPosition.indexInSubject} of{' '}
-                      {subjectPosition.totalInSubject}
-                    </h1>
-                    {currentQuestion.isMarkedForReview && (
-                      <span className="inline-flex items-center gap-1 rounded-sm bg-amber-50 px-2 py-0.5 text-xs font-semibold text-[#B45309] dark:bg-amber-950 dark:text-amber-300">
-                        <Bookmark className="h-3 w-3 fill-current" />
-                        Marked
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
-                    Item {currentIndex + 1} of {questions.length} · {currentQuestion.topicName} ·{' '}
+              {/* Light Blue Question Number Banner (Authentic JAMB CBT Style) */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#CBD5E1] bg-[#DCEAFB] px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h1 className="font-display text-sm font-bold text-[#111827] sm:text-base dark:text-white">
+                    Question {subjectPosition.indexInSubject} of {subjectPosition.totalInSubject}
+                  </h1>
+                  <span className="text-xs font-medium text-[#374151] dark:text-slate-300">
+                    ({currentQuestion.topicName} ·{' '}
                     {currentQuestion.questionSource === 'verified_past_question'
-                      ? `Past Question${currentQuestion.examYear ? ` (${currentQuestion.examYear})` : ''}`
+                      ? `UTME ${currentQuestion.examYear || 'Past Question'}`
                       : 'Practice Question'}
-                  </p>
+                    )
+                  </span>
+                  {currentQuestion.isMarkedForReview && (
+                    <span className="inline-flex items-center gap-1 rounded-sm bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900 dark:bg-amber-950 dark:text-amber-300">
+                      <Bookmark className="h-3 w-3 fill-current" />
+                      Marked
+                    </span>
+                  )}
                 </div>
 
                 {currentQuestion.selectedOption && (
                   <button
                     type="button"
                     onClick={() => handleSelectOption(null)}
-                    className="min-h-[36px] rounded-lg border border-[#E2E8F0] px-2.5 py-1 text-xs font-semibold text-[#475569] hover:bg-[#F8FAFC] dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="min-h-[30px] rounded-md border border-[#94A3B8] bg-white px-2.5 text-xs font-semibold text-[#111827] hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
                   >
-                    Clear Choice
+                    Clear Answer
                   </button>
                 )}
               </div>
 
-              {/* Question Stem */}
-              <div
-                className={`mt-5 mb-5 leading-[1.65] font-medium text-[#0F172A] dark:text-slate-100 ${
-                  largeFont ? 'text-lg sm:text-xl' : 'text-base sm:text-[17px]'
-                }`}
-              >
-                {currentQuestion.questionText}
-              </div>
-
-              {currentQuestion.questionImageUrl && (
-                <div className="mb-5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 dark:border-slate-700 dark:bg-slate-950">
-                  <img
-                    src={currentQuestion.questionImageUrl}
-                    alt={`Diagram for question ${currentIndex + 1}`}
-                    referrerPolicy="no-referrer"
-                    className="mx-auto max-h-64 object-contain"
-                  />
+              <div className="p-4 sm:p-6">
+                {/* Question Stem */}
+                <div
+                  className={`mb-5 leading-[1.65] font-medium whitespace-pre-line text-[#111827] dark:text-slate-100 ${
+                    largeFont ? 'text-lg sm:text-xl' : 'text-base sm:text-[17px]'
+                  }`}
+                >
+                  {currentQuestion.questionText}
                 </div>
-              )}
 
-              {/* Answer Options A - D */}
-              <div className="space-y-2.5" role="radiogroup" aria-label="Answer choices">
-                {currentQuestion.options.map((opt) => {
-                  const isSelected = currentQuestion.selectedOption === opt.label;
-                  return (
-                    <button
-                      key={opt.label}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      onClick={() => handleSelectOption(opt.label as 'A' | 'B' | 'C' | 'D')}
-                      className={`flex min-h-[52px] w-full items-center gap-3.5 rounded-[12px] border px-3.5 py-3 text-left ${
-                        isSelected
-                          ? 'border-[#1D4ED8] bg-blue-50 text-[#0F172A] dark:border-blue-500 dark:bg-blue-950/60 dark:text-white'
-                          : 'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      <span
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border font-mono text-xs font-bold ${
+                {currentQuestion.questionImageUrl && (
+                  <div className="mb-5 rounded-md border border-[#CBD5E1] bg-[#F8FAFC] p-3 dark:border-slate-700 dark:bg-slate-950">
+                    <img
+                      src={currentQuestion.questionImageUrl}
+                      alt={`Diagram for question ${currentIndex + 1}`}
+                      referrerPolicy="no-referrer"
+                      className="mx-auto max-h-64 object-contain"
+                    />
+                  </div>
+                )}
+
+                {/* Radio Answer Options A - D */}
+                <div className="space-y-2.5" role="radiogroup" aria-label="Answer choices">
+                  {currentQuestion.options.map((opt) => {
+                    const isSelected = currentQuestion.selectedOption === opt.label;
+                    return (
+                      <label
+                        key={opt.label}
+                        className={`flex min-h-[48px] w-full cursor-pointer items-center gap-3 rounded-md border px-3.5 py-2.5 ${
                           isSelected
-                            ? 'border-[#1D4ED8] bg-[#1D4ED8] text-white'
-                            : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'
+                            ? 'border-[#0B5E2E] bg-emerald-50 text-[#111827] dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-white'
+                            : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F9FAFB] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
                         }`}
                       >
-                        {opt.label}
-                      </span>
-                      <span className={largeFont ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}>
-                        {opt.text}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <input
+                          type="radio"
+                          name={`question-${currentQuestion.questionId}`}
+                          checked={isSelected}
+                          onChange={() => handleSelectOption(opt.label as 'A' | 'B' | 'C' | 'D')}
+                          className="h-4 w-4 shrink-0 accent-[#0B5E2E]"
+                        />
+                        <span className="font-mono text-sm font-bold text-[#111827] dark:text-white">
+                          {opt.label}.
+                        </span>
+                        <span className={`whitespace-pre-line ${largeFont ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}>
+                          {opt.text}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* Desktop Examination Controls */}
-            <div className="mt-6 hidden border-t border-slate-200 pt-4 lg:block dark:border-slate-800">
+            <div className="hidden border-t border-[#E5E7EB] bg-[#F9FAFB] px-6 py-4 lg:block dark:border-slate-800 dark:bg-slate-950">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     disabled={currentIndex === 0}
                     onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-                    className="inline-flex min-h-[42px] items-center gap-1.5 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    className="inline-flex min-h-[42px] items-center justify-center rounded-md bg-[#0B5E2E] px-5 py-2 text-sm font-bold text-white hover:bg-[#084722] disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    <span>Previous Question</span>
+                    &lt;&lt; Previous
                   </button>
 
                   <button
@@ -573,165 +588,172 @@ export default function ExamHall({
                     onClick={handleToggleMark}
                     className={`inline-flex min-h-[42px] items-center gap-1.5 rounded-md border px-4 py-2 text-sm font-semibold ${
                       currentQuestion.isMarkedForReview
-                        ? 'border-amber-500 bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300'
-                        : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                        ? 'border-amber-600 bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300'
+                        : 'border-[#CBD5E1] bg-white text-[#111827] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
                     }`}
                   >
                     <Bookmark className="h-4 w-4" />
-                    <span>{currentQuestion.isMarkedForReview ? 'Unmark' : 'Mark Question'}</span>
+                    <span>{currentQuestion.isMarkedForReview ? 'Marked' : 'Mark'}</span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   {currentIndex < questions.length - 1 ? (
                     <button
                       type="button"
                       onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-                      className="inline-flex min-h-[42px] items-center gap-1.5 rounded-md bg-[#1D4ED8] px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+                      className="inline-flex min-h-[42px] items-center justify-center rounded-md bg-[#0B5E2E] px-6 py-2 text-sm font-bold text-white hover:bg-[#084722]"
                     >
-                      <span>Next Question</span>
-                      <ChevronRight className="h-4 w-4" />
+                      Next &gt;&gt;
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => setShowConfirmSubmit(true)}
-                      className="inline-flex min-h-[42px] items-center gap-1.5 rounded-md bg-emerald-700 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+                      className="inline-flex min-h-[42px] items-center justify-center rounded-md bg-[#0B5E2E] px-6 py-2 text-sm font-bold text-white hover:bg-[#084722]"
                     >
-                      <span>Submit Examination</span>
+                      Submit Examination
                     </button>
                   )}
                 </div>
               </div>
 
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                Keyboard shortcuts: A–D select answer · N / → next · P / ← previous · M mark · C calculator · S submit
+              <p className="mt-2.5 text-[11px] text-[#4B5563] dark:text-slate-400">
+                Shortcuts: A–D select answer · N / → next · P / ← previous · M mark · C calculator · S submit
               </p>
             </div>
           </div>
         </section>
 
-        {/* Desktop Question Navigation Panel */}
+        {/* Right: Question Palette Panel (Desktop right rail + Mobile/Tablet inline below question) */}
         {showPaletteDefault && (
-          <aside className="hidden lg:col-span-4 lg:block">
-            <div className="sticky top-28 rounded-[14px] border border-[#E2E8F0] bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-3 flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 dark:border-slate-800">
-                <h2 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">
-                  Question Navigation
-                </h2>
-                <span className="font-mono text-xs font-semibold text-[#475569] tabular-nums dark:text-slate-400">
-                  {counts.answered}/{counts.total} Answered
+          <aside className="lg:col-span-4">
+            <div className="overflow-hidden rounded-md border border-[#CBD5E1] bg-white lg:sticky lg:top-28 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex items-center justify-between bg-[#0B5E2E] px-4 py-2.5 text-white">
+                <h2 className="font-display text-sm font-bold">Question Palette</h2>
+                <span className="font-mono text-xs font-semibold text-emerald-100 tabular-nums">
+                  {counts.answered}/{counts.total}
                 </span>
               </div>
 
-              {/* Filter Tabs */}
-              <div className="mb-3 grid grid-cols-4 gap-1 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-1 text-[11px] font-semibold dark:border-slate-700 dark:bg-slate-800">
-                {(
-                  [
-                    ['subject', 'Subject'],
-                    ['all', 'All'],
-                    ['unanswered', 'Open'],
-                    ['marked', 'Marked'],
-                  ] as Array<[PaletteScope, string]>
-                ).map(([scopeKey, label]) => (
-                  <button
-                    key={scopeKey}
-                    type="button"
-                    onClick={() => setPaletteScope(scopeKey)}
-                    className={`rounded-md py-1 ${
-                      paletteScope === scopeKey
-                        ? 'bg-white text-[#0F172A] dark:bg-slate-900 dark:text-white'
-                        : 'text-[#475569] hover:text-[#0F172A] dark:text-slate-300'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
+              <div className="p-4">
+                <div className="mb-3 grid grid-cols-4 gap-1 rounded-md border border-[#CBD5E1] bg-[#F2F4F7] p-1 text-[11px] font-bold dark:border-slate-700 dark:bg-slate-800">
+                  {(
+                    [
+                      ['subject', 'Subject'],
+                      ['all', 'All'],
+                      ['unanswered', 'Open'],
+                      ['marked', 'Marked'],
+                    ] as Array<[PaletteScope, string]>
+                  ).map(([scopeKey, label]) => (
+                    <button
+                      key={scopeKey}
+                      type="button"
+                      onClick={() => setPaletteScope(scopeKey)}
+                      className={`rounded-sm py-1 ${
+                        paletteScope === scopeKey
+                          ? 'bg-white text-[#0B5E2E] dark:bg-slate-900 dark:text-emerald-400'
+                          : 'text-[#4B5563] hover:text-[#111827] dark:text-slate-300'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {visiblePaletteEntries.length === 0 ? (
+                  <p className="py-6 text-center text-xs text-[#4B5563] dark:text-slate-400">
+                    No questions in this view.
+                  </p>
+                ) : (
+                  <div className="grid max-h-[260px] grid-cols-5 gap-1.5 overflow-y-auto pr-1">
+                    {visiblePaletteEntries.map(({ q, globalIndex, displayNumber }) => {
+                      const isCurrent = globalIndex === currentIndex;
+                      let cls =
+                        'border-[#CBD5E1] bg-white text-[#111827] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+                      if (isCurrent) {
+                        cls = 'border-[#2563EB] bg-[#2563EB] text-white';
+                      } else if (q.isMarkedForReview) {
+                        cls = 'border-[#D97706] bg-[#D97706] text-white';
+                      } else if (q.selectedOption) {
+                        cls = 'border-[#16A34A] bg-[#16A34A] text-white';
+                      }
+                      return (
+                        <button
+                          key={q.questionId}
+                          type="button"
+                          onClick={() => setCurrentIndex(globalIndex)}
+                          className={`flex h-9 items-center justify-center rounded-sm border font-mono text-xs font-bold tabular-nums ${cls}`}
+                        >
+                          {displayNumber}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Legend */}
+                <div className="mt-4 space-y-1.5 border-t border-[#E5E7EB] pt-3 text-xs dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <span className="h-3.5 w-3.5 rounded-xs bg-[#2563EB]" />
+                    <span className="text-[#374151] dark:text-slate-300">Current</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-3.5 w-3.5 rounded-xs bg-[#16A34A]" />
+                    <span className="text-[#374151] dark:text-slate-300">Answered ({counts.answered})</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-3.5 w-3.5 rounded-xs border border-[#94A3B8] bg-white dark:bg-slate-800" />
+                    <span className="text-[#374151] dark:text-slate-300">Not Answered ({counts.unanswered})</span>
+                  </div>
+                  {counts.marked > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="h-3.5 w-3.5 rounded-xs bg-[#D97706]" />
+                      <span className="text-[#374151] dark:text-slate-300">Marked ({counts.marked})</span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmSubmit(true)}
+                  className="mt-4 min-h-[42px] w-full rounded-md bg-[#0B5E2E] py-2 text-sm font-bold text-white hover:bg-[#084722]"
+                >
+                  Submit Examination
+                </button>
               </div>
-
-              {visiblePaletteEntries.length === 0 ? (
-                <p className="py-6 text-center text-xs text-[#475569] dark:text-slate-400">
-                  No questions in this view.
-                </p>
-              ) : (
-                <div className="grid max-h-[260px] grid-cols-5 gap-1.5 overflow-y-auto pr-1">
-                  {visiblePaletteEntries.map(({ q, globalIndex, displayNumber }) => {
-                    const isCurrent = globalIndex === currentIndex;
-                    let cls =
-                      'border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-[#F8FAFC] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
-                    if (isCurrent) {
-                      cls = 'border-[#1D4ED8] bg-[#1D4ED8] text-white';
-                    } else if (q.isMarkedForReview) {
-                      cls = 'border-[#B45309] bg-[#B45309] text-white';
-                    } else if (q.selectedOption) {
-                      cls = 'border-[#15803D] bg-[#15803D] text-white';
-                    }
-                    return (
-                      <button
-                        key={q.questionId}
-                        type="button"
-                        onClick={() => setCurrentIndex(globalIndex)}
-                        className={`flex h-9 items-center justify-center rounded-md border font-mono text-xs font-bold tabular-nums ${cls}`}
-                      >
-                        {displayNumber}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Clear Status Color Legend */}
-              <div className="mt-4 grid grid-cols-2 gap-2 border-t border-[#E2E8F0] pt-3 text-xs dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-xs bg-[#15803D]" />
-                  <span className="text-[#475569] dark:text-slate-300">Answered ({counts.answered})</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-xs border border-slate-400 bg-white dark:bg-slate-800" />
-                  <span className="text-[#475569] dark:text-slate-300">Not Answered ({counts.unanswered})</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-xs bg-[#B45309]" />
-                  <span className="text-[#475569] dark:text-slate-300">Marked ({counts.marked})</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-xs bg-[#1D4ED8]" />
-                  <span className="text-[#475569] dark:text-slate-300">Current</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowConfirmSubmit(true)}
-                className="mt-4 min-h-[44px] w-full rounded-[10px] bg-[#1D4ED8] py-2 text-sm font-bold text-white hover:bg-blue-800"
-              >
-                Submit Examination
-              </button>
             </div>
           </aside>
         )}
       </main>
 
+      {/* Clean Institutional Desktop CBT Footer */}
+      <footer className="hidden border-t border-[#CBD5E1] bg-[#E5E7EB] px-5 py-2.5 text-xs text-[#374151] lg:block dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <span className="font-semibold">JAMB UTME CBT Examination</span>
+          <span className="font-semibold text-[#0B5E2E] dark:text-emerald-400">Pre-JAMB Academy CBT</span>
+        </div>
+      </footer>
+
       {/* Mobile Fixed Exam Bottom Controls */}
-      <nav className="fixed right-0 bottom-0 left-0 z-30 border-t border-[#E2E8F0] bg-white px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:hidden dark:border-slate-800 dark:bg-slate-900">
+      <nav className="fixed right-0 bottom-0 left-0 z-30 border-t border-[#CBD5E1] bg-white px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:hidden dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto grid max-w-lg grid-cols-4 gap-2">
           <button
             type="button"
             disabled={currentIndex === 0}
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border border-[#E2E8F0] bg-white text-xs font-semibold text-[#0F172A] disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            className="flex min-h-[44px] items-center justify-center rounded-md border border-[#CBD5E1] bg-white text-xs font-bold text-[#111827] disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
-            <ChevronLeft className="h-4 w-4" />
-            <span>Prev</span>
+            &lt;&lt; Prev
           </button>
 
           <button
             type="button"
             onClick={handleToggleMark}
-            className={`flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border text-xs font-semibold ${
+            className={`flex min-h-[44px] items-center justify-center gap-1 rounded-md border text-xs font-bold ${
               currentQuestion.isMarkedForReview
-                ? 'border-[#B45309] bg-amber-50 text-[#B45309] dark:bg-amber-950 dark:text-amber-300'
-                : 'border-[#E2E8F0] bg-white text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                ? 'border-[#D97706] bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-300'
+                : 'border-[#CBD5E1] bg-white text-[#111827] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
             }`}
           >
             <Bookmark className="h-3.5 w-3.5" />
@@ -741,26 +763,25 @@ export default function ExamHall({
           <button
             type="button"
             onClick={() => setShowMobilePalette(true)}
-            className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-semibold text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            className="flex min-h-[44px] items-center justify-center gap-1 rounded-md border border-[#CBD5E1] bg-[#F2F4F7] text-xs font-bold text-[#111827] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
-            <Grid className="h-3.5 w-3.5" />
-            <span>Grid</span>
+            <Grid className="h-3.5 w-3.5 text-[#0B5E2E]" />
+            <span>Palette</span>
           </button>
 
           {currentIndex < questions.length - 1 ? (
             <button
               type="button"
               onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-              className="flex min-h-[44px] items-center justify-center gap-1 rounded-[10px] bg-[#1D4ED8] text-xs font-semibold text-white"
+              className="flex min-h-[44px] items-center justify-center rounded-md bg-[#0B5E2E] text-xs font-bold text-white hover:bg-[#084722]"
             >
-              <span>Next</span>
-              <ChevronRight className="h-4 w-4" />
+              Next &gt;&gt;
             </button>
           ) : (
             <button
               type="button"
               onClick={() => setShowConfirmSubmit(true)}
-              className="flex min-h-[44px] items-center justify-center rounded-[10px] bg-[#15803D] text-xs font-semibold text-white"
+              className="flex min-h-[44px] items-center justify-center rounded-md bg-[#0B5E2E] text-xs font-bold text-white hover:bg-[#084722]"
             >
               Submit
             </button>
@@ -768,7 +789,7 @@ export default function ExamHall({
         </div>
       </nav>
 
-      {/* Mobile Question Navigation Sheet */}
+      {/* Mobile Question Palette Sheet */}
       {showMobilePalette && (
         <div
           className="fixed inset-0 z-50 flex items-end bg-slate-950/50 lg:hidden"
@@ -776,17 +797,17 @@ export default function ExamHall({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full rounded-t-[16px] border-t border-[#E2E8F0] bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900"
+            className="w-full rounded-t-lg border-t border-[#CBD5E1] bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900"
           >
-            <div className="mb-3 flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 dark:border-slate-800">
-              <h3 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">
-                Question Grid ({counts.answered}/{counts.total} Answered)
+            <div className="mb-3 flex items-center justify-between border-b border-[#E5E7EB] pb-2.5 dark:border-slate-800">
+              <h3 className="font-display text-sm font-bold text-[#0B5E2E] dark:text-emerald-400">
+                Question Palette ({counts.answered}/{counts.total} Answered)
               </h3>
               <button
                 type="button"
                 onClick={() => setShowMobilePalette(false)}
-                aria-label="Close question grid"
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-[#475569] hover:bg-[#F8FAFC] dark:text-slate-300"
+                aria-label="Close question palette"
+                className="flex h-10 w-10 items-center justify-center rounded-md text-[#4B5563] hover:bg-slate-100 dark:text-slate-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -795,10 +816,10 @@ export default function ExamHall({
               {questions.map((q, idx) => {
                 const isCurrent = idx === currentIndex;
                 let cls =
-                  'border-[#E2E8F0] bg-white text-[#0F172A] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
-                if (isCurrent) cls = 'border-[#1D4ED8] bg-[#1D4ED8] text-white';
-                else if (q.isMarkedForReview) cls = 'border-[#B45309] bg-[#B45309] text-white';
-                else if (q.selectedOption) cls = 'border-[#15803D] bg-[#15803D] text-white';
+                  'border-[#CBD5E1] bg-white text-[#111827] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+                if (isCurrent) cls = 'border-[#2563EB] bg-[#2563EB] text-white';
+                else if (q.isMarkedForReview) cls = 'border-[#D97706] bg-[#D97706] text-white';
+                else if (q.selectedOption) cls = 'border-[#16A34A] bg-[#16A34A] text-white';
                 return (
                   <button
                     key={q.questionId}
@@ -807,18 +828,18 @@ export default function ExamHall({
                       setCurrentIndex(idx);
                       setShowMobilePalette(false);
                     }}
-                    className={`flex h-11 items-center justify-center rounded-lg border font-mono text-xs font-bold tabular-nums ${cls}`}
+                    className={`flex h-11 items-center justify-center rounded-sm border font-mono text-xs font-bold tabular-nums ${cls}`}
                   >
                     {idx + 1}
                   </button>
                 );
               })}
             </div>
-            <div className="mt-3 flex flex-wrap gap-3 border-t border-[#E2E8F0] pt-2.5 text-xs text-[#475569] dark:border-slate-800 dark:text-slate-400">
-              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#15803D]" /> Answered</span>
-              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs border border-slate-400 bg-white dark:bg-slate-800" /> Open</span>
-              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#B45309]" /> Marked</span>
-              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#1D4ED8]" /> Current</span>
+            <div className="mt-3 flex flex-wrap gap-3 border-t border-[#E5E7EB] pt-2.5 text-xs text-[#374151] dark:border-slate-800 dark:text-slate-400">
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#2563EB]" /> Current</span>
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#16A34A]" /> Answered</span>
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs border border-[#94A3B8] bg-white dark:bg-slate-800" /> Not Answered</span>
+              <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-xs bg-[#D97706]" /> Marked</span>
             </div>
           </div>
         </div>
@@ -827,22 +848,22 @@ export default function ExamHall({
       {/* Help Modal */}
       {showInstructions && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-          <div className="w-full max-w-md rounded-lg border border-slate-300 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h3 className="font-display text-base font-bold text-[#0F2447] dark:text-white">
-              Examination Guide
+          <div className="w-full max-w-md rounded-md border border-[#CBD5E1] bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="font-display text-base font-bold text-[#0B5E2E] dark:text-emerald-400">
+              CBT Examination Guide
             </h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-              <li>1. Click an option or press keys <strong>A, B, C, or D</strong> to select your answer.</li>
-              <li>2. Use <strong>Previous Question</strong> and <strong>Next Question</strong> (or arrow keys) to move between questions.</li>
-              <li>3. Click <strong>Mark Question</strong> (or press <strong>M</strong>) to highlight a question to check later.</li>
-              <li>4. Click <strong>Calculator</strong> (or press <strong>C</strong>) when you need to calculate.</li>
-              <li>5. Your answers save automatically each time you pick an option.</li>
+            <ul className="mt-3 space-y-2 text-sm text-[#374151] dark:text-slate-300">
+              <li>1. Select an option or press keys <strong>A, B, C, or D</strong> to choose your answer.</li>
+              <li>2. Use <strong>&lt;&lt; Previous</strong> and <strong>Next &gt;&gt;</strong> (or arrow keys) to move between questions.</li>
+              <li>3. Click <strong>Mark</strong> (or press <strong>M</strong>) to flag a question to review later.</li>
+              <li>4. Click <strong>Calculator</strong> (or press <strong>C</strong>) when needed.</li>
+              <li>5. Every selection is saved automatically to the server.</li>
             </ul>
             <div className="mt-5 flex justify-end">
               <button
                 type="button"
                 onClick={() => setShowInstructions(false)}
-                className="min-h-[42px] rounded-md bg-[#0F2447] px-4 py-2 text-sm font-semibold text-white"
+                className="min-h-[42px] rounded-md bg-[#0B5E2E] px-4 py-2 text-sm font-bold text-white hover:bg-[#084722]"
               >
                 Continue Examination
               </button>
@@ -854,49 +875,49 @@ export default function ExamHall({
       {/* Submission Confirmation Modal */}
       {showConfirmSubmit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-          <div className="w-full max-w-lg rounded-lg border border-slate-300 bg-white p-5 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-            <h3 className="font-display text-lg font-bold text-[#0F2447] dark:text-white">
-              Are you sure you want to submit your examination?
+          <div className="w-full max-w-lg rounded-md border border-[#CBD5E1] bg-white p-5 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="font-display text-lg font-bold text-[#111827] dark:text-white">
+              Submit Examination?
             </h3>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Check your progress below. Once submitted, your score will be calculated immediately.
+            <p className="mt-1 text-sm text-[#4B5563] dark:text-slate-400">
+              Review your progress below. Once submitted, your UTME score out of 400 will be calculated immediately.
             </p>
 
-            <div className="mt-4 grid grid-cols-3 gap-2 rounded-md border border-slate-200 bg-slate-50 p-3 text-center dark:border-slate-700 dark:bg-slate-950">
+            <div className="mt-4 grid grid-cols-3 gap-2 rounded-md border border-[#CBD5E1] bg-[#F2F4F7] p-3 text-center dark:border-slate-700 dark:bg-slate-950">
               <div>
-                <p className="font-mono text-lg font-bold text-emerald-700 tabular-nums">{counts.answered}</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Answered</p>
+                <p className="font-mono text-lg font-bold text-[#16A34A] tabular-nums">{counts.answered}</p>
+                <p className="text-xs text-[#4B5563] dark:text-slate-400">Answered</p>
               </div>
               <div>
-                <p className="font-mono text-lg font-bold text-slate-800 tabular-nums dark:text-slate-200">
+                <p className="font-mono text-lg font-bold text-[#111827] tabular-nums dark:text-slate-200">
                   {counts.unanswered}
                 </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Unanswered</p>
+                <p className="text-xs text-[#4B5563] dark:text-slate-400">Not Answered</p>
               </div>
               <div>
-                <p className="font-mono text-lg font-bold text-amber-600 tabular-nums">{counts.marked}</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Marked</p>
+                <p className="font-mono text-lg font-bold text-[#D97706] tabular-nums">{counts.marked}</p>
+                <p className="text-xs text-[#4B5563] dark:text-slate-400">Marked</p>
               </div>
             </div>
 
             {subjectSummaries.length > 0 && (
-              <div className="mt-4 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700">
+              <div className="mt-4 overflow-hidden rounded-md border border-[#CBD5E1] dark:border-slate-700">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  <thead className="border-b border-[#CBD5E1] bg-[#F2F4F7] text-[#374151] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     <tr>
                       <th className="px-3 py-2 font-semibold">Subject</th>
                       <th className="px-3 py-2 text-right font-semibold">Answered</th>
-                      <th className="px-3 py-2 text-right font-semibold">Unanswered</th>
+                      <th className="px-3 py-2 text-right font-semibold">Remaining</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-[#E5E7EB] dark:divide-slate-800">
                     {subjectSummaries.map((s) => (
                       <tr key={s.id}>
-                        <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-200">{s.name}</td>
-                        <td className="px-3 py-2 text-right font-mono font-semibold text-emerald-700 tabular-nums">
+                        <td className="px-3 py-2 font-medium text-[#111827] dark:text-slate-200">{s.name}</td>
+                        <td className="px-3 py-2 text-right font-mono font-semibold text-[#16A34A] tabular-nums">
                           {s.answered}/{s.total}
                         </td>
-                        <td className="px-3 py-2 text-right font-mono text-slate-600 tabular-nums dark:text-slate-400">
+                        <td className="px-3 py-2 text-right font-mono text-[#4B5563] tabular-nums dark:text-slate-400">
                           {s.unanswered}
                         </td>
                       </tr>
@@ -911,7 +932,7 @@ export default function ExamHall({
                 type="button"
                 disabled={submitting}
                 onClick={() => setShowConfirmSubmit(false)}
-                className="min-h-[44px] rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                className="min-h-[44px] rounded-md border border-[#CBD5E1] bg-white px-4 py-2 text-sm font-semibold text-[#111827] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
                 Continue Examination
               </button>
@@ -921,7 +942,7 @@ export default function ExamHall({
                 onClick={handleSubmitExam}
                 className="min-h-[44px] rounded-md bg-rose-700 px-4 py-2 text-sm font-bold text-white hover:bg-rose-800 disabled:opacity-60"
               >
-                {submitting ? 'Submitting...' : 'Submit Examination'}
+                {submitting ? 'Submitting...' : 'Confirm Submit'}
               </button>
             </div>
           </div>

@@ -1,12 +1,20 @@
 import { FormEvent, useEffect, useState } from 'react';
 import {
+  BarChart3,
+  BookOpen,
   CheckCircle2,
   ChevronDown,
-  Eye,
-  GraduationCap,
+  ClipboardCheck,
+  FileQuestion,
+  FileText,
+  LogIn,
   Menu,
+  Monitor,
+  UserPlus,
   X,
 } from 'lucide-react';
+import cbtHallImg from '../../assets/images/cbt_exam_hall_1795681516128.jpg';
+import BrandEmblem from '../../components/common/BrandEmblem.tsx';
 import SampleCbtPreview from '../../components/exam/SampleCbtPreview.tsx';
 import { apiFetch, setSessionToken } from '../../lib/api.ts';
 import { AuthUser, PlatformSettings, SubjectCombinationItem, SubjectItem } from '../../types/index.ts';
@@ -67,6 +75,39 @@ const FAQ_ITEMS = [
   },
 ];
 
+const CORE_FEATURES = [
+  {
+    title: 'CBT Practice',
+    desc: 'Authentic computer-based examination screen with question palette and countdown timer.',
+    icon: Monitor,
+  },
+  {
+    title: 'UTME-Style Questions',
+    desc: 'Curriculum-aligned 4-subject UTME questions covering Use of English and core electives.',
+    icon: FileQuestion,
+  },
+  {
+    title: 'Instant Examination Results',
+    desc: 'Immediate UTME scoring out of 400 with complete subject-by-subject breakdown.',
+    icon: ClipboardCheck,
+  },
+  {
+    title: 'Performance Tracking',
+    desc: 'Monitor your average accuracy, attempt history, and readiness across every subject.',
+    icon: BarChart3,
+  },
+  {
+    title: 'Study Materials',
+    desc: 'Access downloadable subject notes, revision handouts, and past question files.',
+    icon: FileText,
+  },
+  {
+    title: 'Detailed Explanations',
+    desc: 'Review every question after submission with verified answers and clear explanations.',
+    icon: BookOpen,
+  },
+];
+
 export default function PublicSite({ route, onNavigate, onAuthenticated }: PublicSiteProps) {
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [overviewLoading, setOverviewLoading] = useState(true);
@@ -105,6 +146,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
   const [contactForm, setContactForm] = useState({ fullName: '', email: '', subject: '', message: '' });
   const [contactStatus, setContactStatus] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [policyModal, setPolicyModal] = useState<'privacy' | 'terms' | null>(null);
 
   const loadOverview = async (retriesLeft = 4): Promise<void> => {
     setOverviewLoading(true);
@@ -242,10 +284,9 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
   const navLinks: Array<{ label: string; path: PublicRoute }> = [
     { label: 'Home', path: '/' },
-    { label: 'Subjects', path: '/subjects' },
-    { label: 'How It Works', path: '/how-it-works' },
-    { label: 'FAQ', path: '/faq' },
-    { label: 'Contact', path: '/contact' },
+    { label: 'About', path: '/about' },
+    { label: 'Features', path: '/features' },
+    { label: 'FAQs', path: '/faq' },
   ];
 
   const go = (path: string) => {
@@ -261,24 +302,27 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F6F9] text-[#0F172A]">
-      {/* Compact Application Header */}
-      <header className="sticky top-0 z-40 border-b border-[#E2E8F0] bg-white">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+    <div className="flex min-h-screen flex-col bg-[#F2F4F7] text-[#111827]">
+      {/* Deep Green Institutional Navigation Header */}
+      <header className="sticky top-0 z-40 border-b border-[#094D25] bg-[#0B5E2E] text-white">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <button
             type="button"
             onClick={() => go('/')}
-            className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-left"
+            className="flex shrink-0 items-center gap-3 text-left"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#0F2447] text-white">
-              <GraduationCap className="h-4 w-4" />
-            </span>
-            <span className="font-display text-base font-bold tracking-tight text-[#0F2447]">
-              Acadet CBT JAMB
-            </span>
+            <BrandEmblem sizeClass="h-10 w-10" />
+            <div className="leading-tight">
+              <span className="block font-display text-base font-bold tracking-tight text-white">
+                Pre-JAMB Academy CBT
+              </span>
+              <span className="hidden text-[11px] font-medium text-emerald-100 sm:block">
+                ...Practice Today, Excel Tomorrow
+              </span>
+            </div>
           </button>
 
-          <nav className="hidden items-center gap-5 md:flex">
+          <nav className="hidden items-center gap-6 md:flex">
             {navLinks.map((item) => (
               <button
                 key={item.path}
@@ -286,8 +330,8 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                 onClick={() => go(item.path)}
                 className={`shrink-0 whitespace-nowrap text-sm font-medium ${
                   route === item.path
-                    ? 'font-semibold text-[#1D4ED8] underline decoration-2 underline-offset-8'
-                    : 'text-slate-600 hover:text-[#0F2447]'
+                    ? 'font-bold text-white underline decoration-2 underline-offset-8'
+                    : 'text-emerald-100 hover:text-white'
                 }`}
               >
                 {item.label}
@@ -299,14 +343,14 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
             <button
               type="button"
               onClick={() => go('/login')}
-              className="hidden h-9 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white px-3.5 text-sm font-semibold text-slate-800 whitespace-nowrap hover:bg-slate-50 sm:inline-flex"
+              className="hidden h-9 shrink-0 items-center justify-center rounded-md border border-white/40 bg-[#094D25] px-3.5 text-sm font-semibold text-white whitespace-nowrap hover:bg-[#084722] sm:inline-flex"
             >
               Login
             </button>
             <button
               type="button"
               onClick={() => go('/register')}
-              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-[#0F2447] px-3.5 text-sm font-semibold text-white whitespace-nowrap hover:bg-[#173566]"
+              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-white px-3.5 text-sm font-bold text-[#0B5E2E] whitespace-nowrap hover:bg-emerald-50"
             >
               Create Account
             </button>
@@ -314,7 +358,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label="Toggle navigation menu"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 md:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-[#094D25] md:hidden"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -322,7 +366,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
         </div>
 
         {mobileMenuOpen && (
-          <div className="border-t border-slate-200 bg-white px-4 py-3 md:hidden">
+          <div className="border-t border-[#094D25] bg-[#094D25] px-4 py-3 md:hidden">
             <div className="flex flex-col gap-1">
               {navLinks.map((item) => (
                 <button
@@ -330,7 +374,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   type="button"
                   onClick={() => go(item.path)}
                   className={`min-h-[44px] rounded-md px-3 py-2 text-left text-sm font-medium ${
-                    route === item.path ? 'bg-blue-50 font-semibold text-[#1D4ED8]' : 'text-slate-700'
+                    route === item.path ? 'bg-[#0B5E2E] font-bold text-white' : 'text-emerald-100 hover:bg-[#0B5E2E]'
                   }`}
                 >
                   {item.label}
@@ -338,23 +382,30 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
               ))}
               <button
                 type="button"
-                onClick={() => go('/about')}
-                className="min-h-[44px] rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700"
+                onClick={() => go('/subjects')}
+                className="min-h-[44px] rounded-md px-3 py-2 text-left text-sm font-medium text-emerald-100 hover:bg-[#0B5E2E]"
               >
-                About
+                Available Subjects
               </button>
-              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
+              <button
+                type="button"
+                onClick={() => go('/contact')}
+                className="min-h-[44px] rounded-md px-3 py-2 text-left text-sm font-medium text-emerald-100 hover:bg-[#0B5E2E]"
+              >
+                Contact Support
+              </button>
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/15 pt-3">
                 <button
                   type="button"
                   onClick={() => go('/login')}
-                  className="min-h-[44px] rounded-md border border-slate-300 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-800"
+                  className="min-h-[44px] rounded-md border border-white/40 bg-[#0B5E2E] px-3 py-2 text-center text-sm font-semibold text-white"
                 >
                   Login
                 </button>
                 <button
                   type="button"
                   onClick={() => go('/register')}
-                  className="min-h-[44px] rounded-md bg-[#0F2447] px-3 py-2 text-center text-sm font-semibold text-white"
+                  className="min-h-[44px] rounded-md bg-white px-3 py-2 text-center text-sm font-bold text-[#0B5E2E]"
                 >
                   Create Account
                 </button>
@@ -366,166 +417,255 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
       <main className="flex-1">
         {route === '/' && (
-          <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
-            {/* Simple, Direct First Screen */}
-            <section className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                <div className="max-w-2xl">
-                  <div className="flex items-center gap-3.5">
-                    {/* Simple JAMB Institutional Emblem */}
-                    <svg
-                      viewBox="0 0 64 64"
-                      className="h-14 w-14 shrink-0"
-                      role="img"
-                      aria-label="JAMB UTME Emblem"
-                    >
-                      <circle cx="32" cy="32" r="30" fill="#FFFFFF" stroke="#15803D" strokeWidth="2.5" />
-                      <circle cx="32" cy="32" r="24" fill="#F8FAFC" stroke="#0F2447" strokeWidth="1.5" />
-                      {/* Open Book */}
-                      <path
-                        d="M17 24c5-2 10-2 15 1 5-3 10-3 15-1v16c-5-2-10-1-15 2-5-3-10-4-15-2V24z"
-                        fill="#FFFFFF"
-                        stroke="#0F2447"
-                        strokeWidth="2"
-                        strokeLinejoin="round"
-                      />
-                      <line x1="32" y1="25" x2="32" y2="42" stroke="#0F2447" strokeWidth="1.8" />
-                      {/* Torch / Flame Crest */}
-                      <path d="M32 13l2.2 4.5-2.2 2.5-2.2-2.5L32 13z" fill="#15803D" />
-                      {/* JAMB Banner */}
-                      <rect x="18" y="45" width="28" height="9" rx="2" fill="#15803D" />
-                      <text
-                        x="32"
-                        y="51.5"
-                        textAnchor="middle"
-                        fill="#FFFFFF"
-                        fontSize="6.5"
-                        fontWeight="700"
-                        fontFamily="system-ui, sans-serif"
-                        letterSpacing="0.8"
-                      >
-                        JAMB
-                      </text>
-                    </svg>
-
+          <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+            {/* Institutional Hero Section */}
+            <section className="overflow-hidden rounded-md border border-[#CBD5E1] bg-white">
+              <div className="grid grid-cols-1 items-center lg:grid-cols-12">
+                <div className="p-6 sm:p-8 lg:col-span-7">
+                  <div className="flex items-center gap-3">
+                    <BrandEmblem sizeClass="h-12 w-12" />
                     <div>
-                      <p className="text-xs font-semibold tracking-wide text-[#1D4ED8]">
-                        UTME COMPUTER-BASED TESTING PORTAL
+                      <p className="text-xs font-bold tracking-wider text-[#0B5E2E] uppercase">
+                        JAMB UTME Computer-Based Examination Portal
                       </p>
-                      <h1 className="mt-1 font-display text-2xl font-bold text-[#0F2447] sm:text-3xl">
-                        Acadet CBT JAMB
-                      </h1>
+                      <p className="text-xs text-[#4B5563]">
+                        Official Simulation &amp; Candidate Preparation System
+                      </p>
                     </div>
                   </div>
 
-                  <p className="mt-4 text-base text-slate-700">
-                    Prepare for your JAMB examination with practice tests.
+                  <h1 className="mt-5 font-display text-2xl font-bold tracking-tight text-[#111827] sm:text-3xl">
+                    PREPARE FOR JAMB UTME WITH CONFIDENCE.
+                  </h1>
+
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#374151] sm:text-base">
+                    Practise with realistic UTME-style questions, improve your examination speed, monitor your performance and prepare effectively for your upcoming JAMB examination.
                   </p>
 
                   <div className="mt-6 flex flex-wrap gap-3">
                     <button
                       type="button"
-                      onClick={() => go('/login')}
-                      className="inline-flex min-h-[44px] min-w-[130px] items-center justify-center rounded-[10px] bg-[#0F2447] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
+                      onClick={() => go('/register')}
+                      className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md bg-[#0B5E2E] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#084722]"
                     >
-                      Login
+                      <UserPlus className="h-4 w-4" />
+                      <span>Create Account</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => go('/register')}
-                      className="inline-flex min-h-[44px] min-w-[150px] items-center justify-center rounded-[10px] bg-[#1D4ED8] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+                      onClick={() => go('/login')}
+                      className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md border border-[#0B5E2E] bg-white px-5 py-2.5 text-sm font-bold text-[#0B5E2E] hover:bg-emerald-50"
                     >
-                      Create Account
+                      <LogIn className="h-4 w-4" />
+                      <span>Login</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowSampleCbt(true)}
-                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] hover:bg-[#F8FAFC]"
+                      className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2.5 text-sm font-semibold text-[#111827] hover:bg-slate-100"
                     >
-                      <Eye className="h-4 w-4 text-[#1D4ED8]" />
-                      <span>Preview CBT Screen</span>
+                      <Monitor className="h-4 w-4 text-[#0B5E2E]" />
+                      <span>Try Sample CBT</span>
                     </button>
                   </div>
+
+                  <div className="mt-5 border-t border-[#E5E7EB] pt-4 text-xs font-medium text-[#4B5563]">
+                    <span>
+                      {overview?.stats.subjectsCount ?? 25} Approved UTME Subjects ·{' '}
+                      {overview?.stats.questionsCount ?? 100}+ Verified &amp; Practice Questions · Instant /400 Scoring
+                    </span>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#CBD5E1] bg-[#F8FAFC] lg:col-span-5 lg:border-t-0 lg:border-l">
+                  <div className="relative aspect-[16/10] w-full lg:aspect-[4/3]">
+                    <img
+                      src={cbtHallImg}
+                      alt="Computer-based examination hall with students sitting at desktop workstations"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="border-t border-[#E5E7EB] bg-white px-4 py-2.5 text-xs text-[#4B5563]">
+                    Standard CBT examination environment modelled after JAMB UTME test centres.
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* Simple Examination Information Section */}
-            <section className="rounded-lg border border-slate-300 bg-white">
-              <div className="border-b border-slate-200 px-6 py-4">
-                <h2 className="font-display text-base font-bold text-[#0F2447]">
-                  Examination Information
+            {/* Features Horizontal Strip */}
+            <section className="rounded-md border border-[#CBD5E1] bg-white">
+              <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3.5">
+                <h2 className="font-display text-sm font-bold tracking-wide text-[#0B5E2E] uppercase">
+                  Platform Examination Services
                 </h2>
               </div>
-
-              <div className="grid grid-cols-1 divide-y divide-slate-200 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-                <div className="space-y-4 p-6">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">1. Subject Combination</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                      Use of English is compulsory for all students. Select three other subjects from{' '}
-                      {overview?.stats.subjectsCount ?? 25} available JAMB subjects to start a full four-subject test.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">2. Practice &amp; Timed Modes</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                      Take a timed examination with an active countdown timer and built-in calculator, or practise at your own pace in Study Mode.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4 p-6">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">3. Automatic Answer Saving</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                      Your answers and marked questions save automatically every time you select an option. You can switch freely between your four subjects.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">4. Instant Results &amp; Review</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                      As soon as you submit, view your score out of 400, your breakdown for each subject, and explanations for the correct answers.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-3.5 text-sm">
-                <span className="text-slate-700">
-                  {overview?.stats.subjectsCount ?? 25} JAMB subjects and{' '}
-                  {overview?.stats.questionsCount ?? 100}+ practice questions available.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => go('/subjects')}
-                  className="font-semibold text-[#1D4ED8] hover:underline whitespace-nowrap"
-                >
-                  View Available Subjects
-                </button>
+              <div className="grid grid-cols-1 divide-y divide-[#E5E7EB] sm:grid-cols-2 sm:divide-x lg:grid-cols-3">
+                {CORE_FEATURES.map((feat) => {
+                  const Icon = feat.icon;
+                  return (
+                    <div key={feat.title} className="p-5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[#CBD5E1] bg-[#F2F4F7] text-[#0B5E2E]">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <h3 className="text-sm font-bold text-[#111827]">{feat.title}</h3>
+                      </div>
+                      <p className="mt-2 text-xs leading-relaxed text-[#4B5563]">{feat.desc}</p>
+                    </div>
+                  );
+                })}
               </div>
             </section>
+
+            {/* How It Works & Available Subjects */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+              <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-5">
+                <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3.5">
+                  <h2 className="font-display text-sm font-bold tracking-wide text-[#0B5E2E] uppercase">
+                    How It Works
+                  </h2>
+                </div>
+                <div className="divide-y divide-[#E5E7EB]">
+                  {[
+                    ['1. Register Candidate Account', 'Create your student profile to generate your candidate registration number.'],
+                    ['2. Select Four UTME Subjects', 'Use of English is compulsory alongside three subjects for your chosen course.'],
+                    ['3. Sit Timed CBT Practice', 'Navigate with the question palette, flag items for review, and track your clock.'],
+                    ['4. Review /400 Score & Corrections', 'Submit to receive instant UTME scaling and detailed question explanations.'],
+                  ].map(([title, desc]) => (
+                    <div key={title} className="px-5 py-3.5">
+                      <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
+                      <p className="mt-0.5 text-xs leading-relaxed text-[#4B5563]">{desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-7">
+                <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3.5">
+                  <h2 className="font-display text-sm font-bold tracking-wide text-[#0B5E2E] uppercase">
+                    Available Subjects ({overview?.subjects.length ?? 25})
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => go('/subjects')}
+                    className="text-xs font-bold text-[#0B5E2E] hover:underline"
+                  >
+                    View All Subjects
+                  </button>
+                </div>
+                <div className="p-5">
+                  {overviewLoading && (!overview || overview.subjects.length === 0) ? (
+                    <p className="text-xs text-[#4B5563]">Loading available JAMB subjects...</p>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+                      {(overview?.subjects || []).slice(0, 12).map((sub) => (
+                        <div
+                          key={sub.id}
+                          className="flex items-center justify-between rounded-md border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2"
+                        >
+                          <span className="truncate text-xs font-semibold text-[#111827]">{sub.name}</span>
+                          <span className="ml-2 shrink-0 font-mono text-[11px] font-bold text-[#0B5E2E]">
+                            {sub.code}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            {/* Compact FAQ & Contact Support */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+              <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-7">
+                <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3.5">
+                  <h2 className="font-display text-sm font-bold tracking-wide text-[#0B5E2E] uppercase">
+                    Frequently Asked Questions
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => go('/faq')}
+                    className="text-xs font-bold text-[#0B5E2E] hover:underline"
+                  >
+                    All FAQs
+                  </button>
+                </div>
+                <div className="divide-y divide-[#E5E7EB]">
+                  {FAQ_ITEMS.slice(0, 3).map((item, idx) => (
+                    <div key={item.q}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                        className="flex min-h-[44px] w-full items-center justify-between gap-4 px-5 py-3 text-left text-xs font-bold text-[#111827] hover:bg-[#F9FAFB]"
+                      >
+                        <span>{item.q}</span>
+                        <ChevronDown
+                          className={`h-4 w-4 shrink-0 text-[#4B5563] transition-transform ${
+                            openFaq === idx ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      {openFaq === idx && (
+                        <div className="border-t border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3 text-xs leading-relaxed text-[#374151]">
+                          {item.a}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-5">
+                <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3.5">
+                  <h2 className="font-display text-sm font-bold tracking-wide text-[#0B5E2E] uppercase">
+                    Contact and Support
+                  </h2>
+                </div>
+                <div className="space-y-3 p-5 text-xs text-[#374151]">
+                  <p className="leading-relaxed">
+                    Need help with candidate registration, subject combination setup, or mock examination schedules? Contact our examination support desk.
+                  </p>
+                  <div className="space-y-1.5 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3.5">
+                    <p>
+                      <strong className="text-[#111827]">Support Email:</strong>{' '}
+                      {overview?.settings.supportEmail || 'support@acadetjamb.com'}
+                    </p>
+                    <p>
+                      <strong className="text-[#111827]">Helpdesk Phone:</strong>{' '}
+                      {overview?.settings.supportPhone || '+234 800 222 3380'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => go('/contact')}
+                    className="inline-flex min-h-[40px] items-center justify-center rounded-md bg-[#0B5E2E] px-4 text-xs font-bold text-white hover:bg-[#084722]"
+                  >
+                    Send Support Message
+                  </button>
+                </div>
+              </section>
+            </div>
           </div>
         )}
 
         {route === '/about' && (
           <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
-              <h1 className="font-display text-2xl font-bold text-[#0F2447]">About Acadet CBT JAMB</h1>
-              <p className="mt-3 text-sm leading-relaxed text-slate-700">
-                Acadet CBT JAMB is an examination practice application built to help secondary school students prepare for the JAMB Unified Tertiary Matriculation Examination (UTME).
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0B5E2E]">About Pre-JAMB Academy CBT</h1>
+              <p className="mt-3 text-sm leading-relaxed text-[#374151]">
+                Pre-JAMB Academy CBT is an institutional computer-based testing portal designed to help UTME candidates practise under authentic JAMB examination conditions.
               </p>
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
-                  <h2 className="text-sm font-bold text-[#0F2447]">Authentic CBT Format</h2>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Practise with four subjects (Use of English plus three electives), a question number grid, question marking, and an on-screen calculator.
+                <div className="rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+                  <h2 className="text-sm font-bold text-[#111827]">Authentic CBT Format</h2>
+                  <p className="mt-1 text-sm text-[#4B5563]">
+                    Practise with four subjects (Use of English plus three electives), a colour-coded question palette, question marking, and an on-screen calculator.
                   </p>
                 </div>
-                <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
-                  <h2 className="text-sm font-bold text-[#0F2447]">Fair Grading &amp; Clear Sources</h2>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Answers stay locked on the server until submission. Every question is clearly marked as either a Practice Question or a Verified Past Question.
+                <div className="rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+                  <h2 className="text-sm font-bold text-[#111827]">Fair Grading &amp; Clear Sources</h2>
+                  <p className="mt-1 text-sm text-[#4B5563]">
+                    Answers remain locked on the server until submission. Every question clearly states whether it is a Practice Question or a Verified Past Question.
                   </p>
                 </div>
               </div>
@@ -535,12 +675,12 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/how-it-works' && (
           <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
-              <h1 className="font-display text-2xl font-bold text-[#0F2447]">How It Works</h1>
-              <p className="mt-1 text-sm text-slate-600">
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0B5E2E]">How It Works</h1>
+              <p className="mt-1 text-sm text-[#4B5563]">
                 Follow these four steps to prepare for your UTME examination.
               </p>
-              <div className="mt-6 divide-y divide-slate-200 rounded-md border border-slate-200">
+              <div className="mt-6 divide-y divide-[#E5E7EB] rounded-md border border-[#E5E7EB]">
                 {[
                   ['1. Create Your Account', 'Register with your name, email, target year, and intended course to receive your candidate registration number.'],
                   ['2. Select Your Four Subjects', 'Use of English is included automatically. Pick three other subjects or choose a course combination.'],
@@ -548,8 +688,8 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   ['4. Check Your Results', 'Submit to see your total score out of 400, your subject-by-subject scores, and answer explanations.'],
                 ].map(([title, desc]) => (
                   <div key={title} className="p-4 sm:p-5">
-                    <h2 className="text-sm font-bold text-[#0F2447]">{title}</h2>
-                    <p className="mt-1 text-sm text-slate-600">{desc}</p>
+                    <h2 className="text-sm font-bold text-[#111827]">{title}</h2>
+                    <p className="mt-1 text-sm text-[#4B5563]">{desc}</p>
                   </div>
                 ))}
               </div>
@@ -559,13 +699,13 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/subjects' && (
           <section className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
-            <div className="rounded-lg border border-slate-300 bg-white p-6">
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <h1 className="font-display text-2xl font-bold text-[#0F2447]">
+                  <h1 className="font-display text-2xl font-bold text-[#0B5E2E]">
                     Available JAMB Subjects ({overview?.subjects.length ?? 25})
                   </h1>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-[#4B5563]">
                     Use of English is compulsory. Choose three other subjects based on your course.
                   </p>
                 </div>
@@ -577,8 +717,8 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                       onClick={() => setSubjectCategory(cat)}
                       className={`min-h-[38px] rounded-md border px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
                         subjectCategory === cat
-                          ? 'border-[#0F2447] bg-[#0F2447] text-white'
-                          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                          ? 'border-[#0B5E2E] bg-[#0B5E2E] text-white'
+                          : 'border-[#CBD5E1] bg-white text-[#374151] hover:bg-[#F9FAFB]'
                       }`}
                     >
                       {cat}
@@ -588,16 +728,16 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
               </div>
 
               {overviewLoading && (!overview || overview.subjects.length === 0) ? (
-                <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-600">
+                <div className="mt-6 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-6 text-center text-sm text-[#4B5563]">
                   Loading subjects...
                 </div>
               ) : overviewError && (!overview || overview.subjects.length === 0) ? (
-                <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-6 text-center">
-                  <p className="text-sm text-slate-700">Unable to load subjects right now.</p>
+                <div className="mt-6 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-6 text-center">
+                  <p className="text-sm text-[#374151]">Unable to load subjects right now.</p>
                   <button
                     type="button"
                     onClick={() => loadOverview(2)}
-                    className="mt-3 rounded-md bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white"
+                    className="mt-3 rounded-md bg-[#0B5E2E] px-4 py-2 text-xs font-semibold text-white"
                   >
                     Try Again
                   </button>
@@ -607,29 +747,29 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   {(overview?.subjects || [])
                     .filter((s) => subjectCategory === 'All' || s.category === subjectCategory)
                     .map((s) => (
-                      <div key={s.id} className="rounded-md border border-slate-200 bg-slate-50/50 p-4">
-                        <p className="font-mono text-xs font-semibold text-[#1D4ED8]">
+                      <div key={s.id} className="rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+                        <p className="font-mono text-xs font-semibold text-[#0B5E2E]">
                           {s.code} · {s.isCompulsory ? 'Compulsory' : s.category}
                         </p>
-                        <h2 className="mt-1 text-base font-bold text-slate-900">{s.name}</h2>
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600">{s.description}</p>
+                        <h2 className="mt-1 text-base font-bold text-[#111827]">{s.name}</h2>
+                        <p className="mt-1 text-xs leading-relaxed text-[#4B5563]">{s.description}</p>
                       </div>
                     ))}
                 </div>
               )}
             </div>
 
-            <div className="rounded-lg border border-slate-300 bg-white p-6">
-              <h2 className="font-display text-lg font-bold text-[#0F2447]">Common Course Combinations</h2>
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6">
+              <h2 className="font-display text-lg font-bold text-[#0B5E2E]">Common Course Combinations</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                 {(overview?.combinations || []).map((c) => (
-                  <div key={c.id} className="rounded-md border border-slate-200 p-4">
-                    <p className="text-xs font-semibold text-emerald-700">{c.faculty}</p>
-                    <h3 className="mt-0.5 text-sm font-bold text-slate-900">{c.name}</h3>
-                    <p className="mt-1 font-mono text-xs font-semibold text-[#1D4ED8]">
+                  <div key={c.id} className="rounded-md border border-[#E5E7EB] p-4">
+                    <p className="text-xs font-semibold text-[#0B5E2E]">{c.faculty}</p>
+                    <h3 className="mt-0.5 text-sm font-bold text-[#111827]">{c.name}</h3>
+                    <p className="mt-1 font-mono text-xs font-semibold text-[#374151]">
                       {c.subjectCodes.join(' · ')}
                     </p>
-                    <p className="mt-1 text-xs text-slate-600">{c.description}</p>
+                    <p className="mt-1 text-xs text-[#4B5563]">{c.description}</p>
                   </div>
                 ))}
               </div>
@@ -639,20 +779,13 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/features' && (
           <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
-              <h1 className="font-display text-2xl font-bold text-[#0F2447]">Application Features</h1>
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0B5E2E]">Portal Features</h1>
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  ['Timed 4-Subject Tests', 'Practise Use of English and three electives together with a live countdown clock.'],
-                  ['Automatic Saving', 'Your selected answers save immediately so refreshing does not erase your work.'],
-                  ['Question Number Grid', 'See answered, unanswered, and flagged questions at a glance and jump to any number.'],
-                  ['Built-in Calculator', 'Open the CBT calculator directly inside your examination screen whenever needed.'],
-                  ['Detailed Score Breakdown', 'Get your total UTME score out of 400 and individual subject percentages right away.'],
-                  ['Study Materials', 'Download subject notes and revision handouts from your student account.'],
-                ].map(([title, desc]) => (
-                  <div key={title} className="rounded-md border border-slate-200 bg-slate-50/50 p-4">
-                    <h2 className="text-sm font-bold text-[#0F2447]">{title}</h2>
-                    <p className="mt-1 text-sm text-slate-600">{desc}</p>
+                {CORE_FEATURES.map((feat) => (
+                  <div key={feat.title} className="rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+                    <h2 className="text-sm font-bold text-[#111827]">{feat.title}</h2>
+                    <p className="mt-1 text-sm text-[#4B5563]">{feat.desc}</p>
                   </div>
                 ))}
               </div>
@@ -662,25 +795,25 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/faq' && (
           <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-8">
-              <h1 className="font-display text-2xl font-bold text-[#0F2447]">Frequently Asked Questions</h1>
-              <div className="mt-6 divide-y divide-slate-200 rounded-md border border-slate-200">
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6 sm:p-8">
+              <h1 className="font-display text-2xl font-bold text-[#0B5E2E]">Frequently Asked Questions</h1>
+              <div className="mt-6 divide-y divide-[#E5E7EB] rounded-md border border-[#E5E7EB]">
                 {FAQ_ITEMS.map((item, idx) => (
                   <div key={item.q}>
                     <button
                       type="button"
                       onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                      className="flex min-h-[48px] w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-semibold text-slate-900 hover:bg-slate-50"
+                      className="flex min-h-[48px] w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-semibold text-[#111827] hover:bg-[#F9FAFB]"
                     >
                       <span>{item.q}</span>
                       <ChevronDown
-                        className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${
+                        className={`h-4 w-4 shrink-0 text-[#4B5563] transition-transform ${
                           openFaq === idx ? 'rotate-180' : ''
                         }`}
                       />
                     </button>
                     {openFaq === idx && (
-                      <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3.5 text-sm leading-relaxed text-slate-700">
+                      <div className="border-t border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3.5 text-sm leading-relaxed text-[#374151]">
                         {item.a}
                       </div>
                     )}
@@ -693,19 +826,19 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/contact' && (
           <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-            <div className="grid grid-cols-1 gap-6 rounded-lg border border-slate-300 bg-white p-6 sm:p-8 lg:grid-cols-12">
+            <div className="grid grid-cols-1 gap-6 rounded-md border border-[#CBD5E1] bg-white p-6 sm:p-8 lg:grid-cols-12">
               <div className="lg:col-span-5">
-                <h1 className="font-display text-2xl font-bold text-[#0F2447]">Contact Support</h1>
-                <p className="mt-2 text-sm text-slate-600">
+                <h1 className="font-display text-2xl font-bold text-[#0B5E2E]">Contact Support</h1>
+                <p className="mt-2 text-sm text-[#4B5563]">
                   Send us a message if you need help with your account, subject setup, or mock examination schedule.
                 </p>
-                <div className="mt-5 space-y-2.5 border-t border-slate-200 pt-4 text-sm text-slate-700">
+                <div className="mt-5 space-y-2.5 border-t border-[#E5E7EB] pt-4 text-sm text-[#374151]">
                   <p>
-                    <span className="font-semibold text-slate-900">Email:</span>{' '}
+                    <span className="font-semibold text-[#111827]">Email:</span>{' '}
                     {overview?.settings.supportEmail || 'support@acadetjamb.com'}
                   </p>
                   <p>
-                    <span className="font-semibold text-slate-900">Phone:</span>{' '}
+                    <span className="font-semibold text-[#111827]">Phone:</span>{' '}
                     {overview?.settings.supportPhone || '+234 800 222 3380'}
                   </p>
                 </div>
@@ -714,42 +847,42 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
               <form onSubmit={handleContactSubmit} className="space-y-4 lg:col-span-7">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">Full Name</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151]">Full Name</label>
                     <input
                       required
                       value={contactForm.fullName}
                       onChange={(e) => setContactForm((f) => ({ ...f, fullName: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">Email Address</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151]">Email Address</label>
                     <input
                       type="email"
                       required
                       value={contactForm.email}
                       onChange={(e) => setContactForm((f) => ({ ...f, email: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Subject</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Subject</label>
                   <input
                     required
                     value={contactForm.subject}
                     onChange={(e) => setContactForm((f) => ({ ...f, subject: e.target.value }))}
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Message</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Message</label>
                   <textarea
                     required
                     rows={4}
                     value={contactForm.message}
                     onChange={(e) => setContactForm((f) => ({ ...f, message: e.target.value }))}
-                    className="w-full rounded-md border border-slate-300 p-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="w-full rounded-md border border-[#CBD5E1] p-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 {contactStatus && (
@@ -759,7 +892,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                 )}
                 <button
                   type="submit"
-                  className="min-h-[44px] rounded-md bg-[#0F2447] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
+                  className="min-h-[44px] rounded-md bg-[#0B5E2E] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#084722]"
                 >
                   Send Message
                 </button>
@@ -770,16 +903,16 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/login' && (
           <section className="mx-auto max-w-md px-4 py-10">
-            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-7">
-              <div className="mb-5 grid grid-cols-2 gap-1 rounded-md border border-slate-200 bg-slate-100 p-1">
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6 sm:p-7">
+              <div className="mb-5 grid grid-cols-2 gap-1 rounded-md border border-[#CBD5E1] bg-[#F2F4F7] p-1">
                 <button
                   type="button"
                   onClick={() => {
                     setLoginMode('student');
                     setAuthError(null);
                   }}
-                  className={`min-h-[38px] rounded-sm text-xs font-semibold ${
-                    loginMode === 'student' ? 'bg-white text-[#0F2447]' : 'text-slate-600'
+                  className={`min-h-[38px] rounded-sm text-xs font-bold ${
+                    loginMode === 'student' ? 'bg-[#0B5E2E] text-white' : 'text-[#4B5563]'
                   }`}
                 >
                   Student Login
@@ -790,18 +923,18 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     setLoginMode('admin');
                     setAuthError(null);
                   }}
-                  className={`min-h-[38px] rounded-sm text-xs font-semibold ${
-                    loginMode === 'admin' ? 'bg-white text-[#0F2447]' : 'text-slate-600'
+                  className={`min-h-[38px] rounded-sm text-xs font-bold ${
+                    loginMode === 'admin' ? 'bg-[#0B5E2E] text-white' : 'text-[#4B5563]'
                   }`}
                 >
                   Administrator
                 </button>
               </div>
 
-              <h1 className="font-display text-xl font-bold text-[#0F2447]">
-                {loginMode === 'admin' ? 'Administrator Login' : 'Student Login'}
+              <h1 className="font-display text-xl font-bold text-[#111827]">
+                {loginMode === 'admin' ? 'Administrator Login' : 'Candidate Login'}
               </h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-[#4B5563]">
                 {loginMode === 'admin'
                   ? 'Log in to manage questions, subjects, and student records.'
                   : 'Log in with your email, username, or registration number.'}
@@ -809,7 +942,7 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
               <form onSubmit={handleLoginSubmit} className="mt-5 space-y-4">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">
                     {loginMode === 'admin' ? 'Email or Username' : 'Email, Username, or Registration No.'}
                   </label>
                   <input
@@ -817,18 +950,18 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     placeholder={loginMode === 'admin' ? 'Enter admin email or username' : 'Enter email or registration number'}
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Password</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Password</label>
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
 
@@ -841,18 +974,18 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className="min-h-[44px] w-full rounded-md bg-[#0F2447] py-2.5 text-sm font-semibold text-white hover:bg-[#173566] disabled:opacity-60"
+                  className="min-h-[44px] w-full rounded-md bg-[#0B5E2E] py-2.5 text-sm font-bold text-white hover:bg-[#084722] disabled:opacity-60"
                 >
                   {authLoading ? 'Logging in...' : 'Login'}
                 </button>
               </form>
 
               {loginMode === 'student' && (
-                <div className="mt-5 flex items-center justify-between border-t border-slate-200 pt-4 text-xs">
-                  <button type="button" onClick={() => go('/forgot-password')} className="font-semibold text-[#1D4ED8] hover:underline">
+                <div className="mt-5 flex items-center justify-between border-t border-[#E5E7EB] pt-4 text-xs">
+                  <button type="button" onClick={() => go('/forgot-password')} className="font-semibold text-[#0B5E2E] hover:underline">
                     Forgot password?
                   </button>
-                  <button type="button" onClick={() => go('/register')} className="font-semibold text-[#0F2447] hover:underline">
+                  <button type="button" onClick={() => go('/register')} className="font-semibold text-[#111827] hover:underline">
                     Create Account
                   </button>
                 </div>
@@ -863,59 +996,59 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/register' && (
           <section className="mx-auto max-w-2xl px-4 py-8">
-            <div className="rounded-lg border border-slate-300 bg-white p-6 sm:p-7">
-              <h1 className="font-display text-xl font-bold text-[#0F2447]">Create Student Account</h1>
-              <p className="mt-1 text-sm text-slate-600">
-                Fill in your details below to create your Acadet CBT JAMB account.
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6 sm:p-7">
+              <h1 className="font-display text-xl font-bold text-[#0B5E2E]">Create Candidate Account</h1>
+              <p className="mt-1 text-sm text-[#4B5563]">
+                Complete your registration details below to open your Pre-JAMB Academy CBT portal.
               </p>
 
               <form onSubmit={handleRegisterSubmit} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Full Name</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Full Name</label>
                   <input
                     required
                     value={regForm.fullName}
                     onChange={(e) => setRegForm((f) => ({ ...f, fullName: e.target.value }))}
                     placeholder="Enter your full name"
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Email Address</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Email Address</label>
                   <input
                     type="email"
                     required
                     value={regForm.email}
                     onChange={(e) => setRegForm((f) => ({ ...f, email: e.target.value }))}
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Username</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Username</label>
                   <input
                     required
                     value={regForm.username}
                     onChange={(e) => setRegForm((f) => ({ ...f, username: e.target.value }))}
                     placeholder="Choose a username"
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Phone Number</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Phone Number</label>
                   <input
                     required
                     value={regForm.phoneNumber}
                     onChange={(e) => setRegForm((f) => ({ ...f, phoneNumber: e.target.value }))}
                     placeholder="08012345678"
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">JAMB Examination Year</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">JAMB Examination Year</label>
                   <select
                     value={regForm.jambYear}
                     onChange={(e) => setRegForm((f) => ({ ...f, jambYear: e.target.value }))}
-                    className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   >
                     <option value="2026">2026 UTME</option>
                     <option value="2027">2027 UTME</option>
@@ -923,34 +1056,34 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Intended Course</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Intended Course</label>
                   <input
                     required
                     value={regForm.intendedCourse}
                     onChange={(e) => setRegForm((f) => ({ ...f, intendedCourse: e.target.value }))}
                     placeholder="e.g. Medicine & Surgery"
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Preferred Institution</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Preferred Institution</label>
                   <input
                     required
                     value={regForm.preferredInstitution}
                     onChange={(e) => setRegForm((f) => ({ ...f, preferredInstitution: e.target.value }))}
                     placeholder="e.g. University of Ibadan"
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-xs font-semibold text-slate-700">Password (minimum 8 characters)</label>
+                  <label className="mb-1 block text-xs font-semibold text-[#374151]">Password (minimum 8 characters)</label>
                   <input
                     type="password"
                     required
                     minLength={8}
                     value={regForm.password}
                     onChange={(e) => setRegForm((f) => ({ ...f, password: e.target.value }))}
-                    className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                    className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                   />
                 </div>
 
@@ -964,16 +1097,16 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   <button
                     type="submit"
                     disabled={authLoading}
-                    className="min-h-[44px] w-full rounded-md bg-[#1D4ED8] py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
+                    className="min-h-[44px] w-full rounded-md bg-[#0B5E2E] py-2.5 text-sm font-bold text-white hover:bg-[#084722] disabled:opacity-60"
                   >
                     {authLoading ? 'Creating Account...' : 'Create Account'}
                   </button>
                 </div>
               </form>
 
-              <p className="mt-5 border-t border-slate-200 pt-4 text-center text-xs text-slate-600">
+              <p className="mt-5 border-t border-[#E5E7EB] pt-4 text-center text-xs text-[#4B5563]">
                 Already have an account?{' '}
-                <button type="button" onClick={() => go('/login')} className="font-semibold text-[#1D4ED8] hover:underline">
+                <button type="button" onClick={() => go('/login')} className="font-bold text-[#0B5E2E] hover:underline">
                   Login here
                 </button>
               </p>
@@ -983,9 +1116,9 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/forgot-password' && (
           <section className="mx-auto max-w-md px-4 py-10">
-            <div className="rounded-lg border border-slate-300 bg-white p-6">
-              <h1 className="font-display text-xl font-bold text-[#0F2447]">Reset Password</h1>
-              <p className="mt-1 text-sm text-slate-600">Enter your email address to receive a password reset link.</p>
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6">
+              <h1 className="font-display text-xl font-bold text-[#0B5E2E]">Reset Password</h1>
+              <p className="mt-1 text-sm text-[#4B5563]">Enter your email address to receive a password reset link.</p>
               <form onSubmit={handleForgotSubmit} className="mt-5 space-y-4">
                 <input
                   type="email"
@@ -993,19 +1126,19 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                   placeholder="Enter your email address"
-                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-[#1D4ED8] focus:outline-none"
+                  className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm focus:border-[#0B5E2E] focus:outline-none"
                 />
                 {authSuccess && <p className="rounded-md bg-emerald-50 p-3 text-xs text-emerald-800">{authSuccess}</p>}
                 {authError && <p className="rounded-md bg-rose-50 p-3 text-xs text-rose-800">{authError}</p>}
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className="min-h-[44px] w-full rounded-md bg-[#0F2447] py-2.5 text-sm font-semibold text-white hover:bg-[#173566]"
+                  className="min-h-[44px] w-full rounded-md bg-[#0B5E2E] py-2.5 text-sm font-bold text-white hover:bg-[#084722]"
                 >
                   Send Reset Link
                 </button>
               </form>
-              <button type="button" onClick={() => go('/login')} className="mt-4 text-xs font-semibold text-[#1D4ED8] hover:underline">
+              <button type="button" onClick={() => go('/login')} className="mt-4 text-xs font-bold text-[#0B5E2E] hover:underline">
                 Back to Login
               </button>
             </div>
@@ -1014,15 +1147,15 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/reset-password' && (
           <section className="mx-auto max-w-md px-4 py-10">
-            <div className="rounded-lg border border-slate-300 bg-white p-6">
-              <h1 className="font-display text-xl font-bold text-[#0F2447]">Choose a New Password</h1>
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6">
+              <h1 className="font-display text-xl font-bold text-[#0B5E2E]">Choose a New Password</h1>
               <form onSubmit={handleResetSubmit} className="mt-5 space-y-4">
                 <input
                   required
                   value={resetToken}
                   onChange={(e) => setResetToken(e.target.value)}
                   placeholder="Reset code"
-                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm"
+                  className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm"
                 />
                 <input
                   type="password"
@@ -1031,11 +1164,11 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
                   value={resetNewPassword}
                   onChange={(e) => setResetNewPassword(e.target.value)}
                   placeholder="New password (minimum 8 characters)"
-                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm"
+                  className="h-11 w-full rounded-md border border-[#CBD5E1] px-3 text-sm"
                 />
                 {authSuccess && <p className="rounded-md bg-emerald-50 p-3 text-xs text-emerald-800">{authSuccess}</p>}
                 {authError && <p className="rounded-md bg-rose-50 p-3 text-xs text-rose-800">{authError}</p>}
-                <button type="submit" className="min-h-[44px] w-full rounded-md bg-[#0F2447] py-2.5 text-sm font-semibold text-white">
+                <button type="submit" className="min-h-[44px] w-full rounded-md bg-[#0B5E2E] py-2.5 text-sm font-bold text-white hover:bg-[#084722]">
                   Save New Password
                 </button>
               </form>
@@ -1045,14 +1178,14 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
 
         {route === '/verify-email' && (
           <section className="mx-auto max-w-md px-4 py-12 text-center">
-            <div className="rounded-lg border border-slate-300 bg-white p-6">
-              <CheckCircle2 className="mx-auto h-9 w-9 text-emerald-700" />
-              <h1 className="mt-3 font-display text-xl font-bold text-[#0F2447]">Email Verification</h1>
-              <p className="mt-2 text-sm text-slate-600">{verifyStatus || 'Checking verification link...'}</p>
+            <div className="rounded-md border border-[#CBD5E1] bg-white p-6">
+              <CheckCircle2 className="mx-auto h-9 w-9 text-[#0B5E2E]" />
+              <h1 className="mt-3 font-display text-xl font-bold text-[#0B5E2E]">Email Verification</h1>
+              <p className="mt-2 text-sm text-[#4B5563]">{verifyStatus || 'Checking verification link...'}</p>
               <button
                 type="button"
                 onClick={() => go('/login')}
-                className="mt-5 min-h-[44px] rounded-md bg-[#0F2447] px-5 py-2 text-sm font-semibold text-white"
+                className="mt-5 min-h-[44px] rounded-md bg-[#0B5E2E] px-5 py-2 text-sm font-bold text-white hover:bg-[#084722]"
               >
                 Continue to Login
               </button>
@@ -1061,19 +1194,76 @@ export default function PublicSite({ route, onNavigate, onAuthenticated }: Publi
         )}
       </main>
 
-      <footer className="border-t border-slate-300 bg-white text-slate-600">
+      {/* Deep Green Institutional Footer */}
+      <footer className="border-t border-[#094D25] bg-[#0B5E2E] text-emerald-100">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 text-xs sm:px-6">
-          <p className="font-semibold text-[#0F2447]">Acadet CBT JAMB</p>
+          <p className="font-semibold text-white">© {new Date().getFullYear()} Pre-JAMB Academy CBT. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-4">
-            <button type="button" onClick={() => go('/about')} className="hover:text-[#0F2447]">About</button>
-            <button type="button" onClick={() => go('/subjects')} className="hover:text-[#0F2447]">Subjects</button>
-            <button type="button" onClick={() => go('/how-it-works')} className="hover:text-[#0F2447]">How It Works</button>
-            <button type="button" onClick={() => go('/faq')} className="hover:text-[#0F2447]">FAQ</button>
-            <button type="button" onClick={() => go('/contact')} className="hover:text-[#0F2447]">Contact</button>
+            <button type="button" onClick={() => go('/about')} className="hover:text-white">About</button>
+            <button type="button" onClick={() => go('/subjects')} className="hover:text-white">Subjects</button>
+            <button type="button" onClick={() => go('/faq')} className="hover:text-white">FAQs</button>
+            <button type="button" onClick={() => setPolicyModal('privacy')} className="hover:text-white">Privacy</button>
+            <button type="button" onClick={() => setPolicyModal('terms')} className="hover:text-white">Terms</button>
+            <button type="button" onClick={() => go('/contact')} className="hover:text-white">Contact</button>
           </div>
-          <p>© {new Date().getFullYear()} Acadet CBT JAMB</p>
         </div>
       </footer>
+
+      {policyModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          onClick={() => setPolicyModal(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-md border border-[#CBD5E1] bg-white p-6"
+          >
+            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+              <h2 className="font-display text-base font-bold text-[#0B5E2E]">
+                {policyModal === 'privacy' ? 'Candidate Privacy Notice' : 'Examination Portal Terms of Use'}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setPolicyModal(null)}
+                aria-label="Close policy window"
+                className="flex h-9 w-9 items-center justify-center rounded-md text-[#4B5563] hover:bg-slate-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-4 space-y-3 text-xs leading-relaxed text-[#374151]">
+              {policyModal === 'privacy' ? (
+                <>
+                  <p>
+                    Pre-JAMB Academy CBT stores your registration profile, chosen UTME subjects, examination responses, and performance analytics solely to deliver realistic CBT practice and track your academic progress.
+                  </p>
+                  <p>
+                    Candidate passwords are encrypted, and examination answers are graded securely on the server without sharing personal details with third parties.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    Candidate accounts are intended for individual UTME practice and scheduled mock examinations. Automated scraping, answer tampering, or multi-account abuse is prohibited.
+                  </p>
+                  <p>
+                    Timed UTME mock examinations enforce the active examination clock and automatically submit recorded responses when time expires.
+                  </p>
+                </>
+              )}
+            </div>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setPolicyModal(null)}
+                className="min-h-[40px] rounded-md bg-[#0B5E2E] px-4 text-xs font-bold text-white hover:bg-[#084722]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

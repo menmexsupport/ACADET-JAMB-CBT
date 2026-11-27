@@ -172,13 +172,13 @@ export default function AdminWorkspace({ admin, onLogout }: AdminWorkspaceProps)
 
   return (
     <div className="flex min-h-screen bg-[#F4F6F8] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      {/* Admin Navy Sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-800 bg-[#0F2447] text-blue-100 lg:flex">
-        <div className="flex h-14 items-center gap-2.5 border-b border-blue-900/70 px-4">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-700 text-white">
+      {/* Admin Deep Green Sidebar */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-[#094D25] bg-[#0B5E2E] text-emerald-50 lg:flex">
+        <div className="flex h-14 items-center gap-2.5 border-b border-white/15 px-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#0B5E2E]">
             <GraduationCap className="h-4 w-4" />
           </span>
-          <span className="font-display text-sm font-bold text-white">Acadet Admin</span>
+          <span className="font-display text-sm font-bold text-white">Pre-JAMB Admin</span>
         </div>
 
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2.5 py-3">
@@ -192,7 +192,7 @@ export default function AdminWorkspace({ admin, onLogout }: AdminWorkspaceProps)
                   type="button"
                   onClick={() => selectSection(item.id)}
                   className={`flex min-h-[38px] w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-left text-xs font-semibold ${
-                    section === item.id ? 'bg-[#1D4ED8] text-white' : 'text-blue-200 hover:bg-blue-900/60 hover:text-white'
+                    section === item.id ? 'bg-white text-[#0B5E2E]' : 'text-emerald-100 hover:bg-[#094D25] hover:text-white'
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -202,11 +202,11 @@ export default function AdminWorkspace({ admin, onLogout }: AdminWorkspaceProps)
             })}
         </nav>
 
-        <div className="border-t border-blue-900/70 p-2.5">
+        <div className="border-t border-white/15 p-2.5">
           <button
             type="button"
             onClick={onLogout}
-            className="flex min-h-[38px] w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-950/50"
+            className="flex min-h-[38px] w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#094D25]"
           >
             <LogOut className="h-4 w-4" />
             <span>Log Out</span>
@@ -217,13 +217,13 @@ export default function AdminWorkspace({ admin, onLogout }: AdminWorkspaceProps)
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="flex w-72 flex-col bg-[#0F2447] text-blue-100">
-            <div className="flex h-14 items-center justify-between border-b border-blue-900 px-4">
-              <span className="font-display text-sm font-bold text-white">Acadet Admin</span>
+          <div className="flex w-72 flex-col bg-[#0B5E2E] text-emerald-50">
+            <div className="flex h-14 items-center justify-between border-b border-white/15 px-4">
+              <span className="font-display text-sm font-bold text-white">Pre-JAMB Admin</span>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md text-blue-200"
+                className="flex h-9 w-9 items-center justify-center rounded-md text-emerald-100"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -237,7 +237,7 @@ export default function AdminWorkspace({ admin, onLogout }: AdminWorkspaceProps)
                     type="button"
                     onClick={() => selectSection(item.id)}
                     className={`flex min-h-[42px] w-full items-center gap-2.5 rounded-md px-3 text-left text-xs font-semibold ${
-                      section === item.id ? 'bg-[#1D4ED8] text-white' : 'text-blue-200'
+                      section === item.id ? 'bg-white text-[#0B5E2E]' : 'text-emerald-100'
                     }`}
                   >
                     <item.icon className="h-4 w-4" />
@@ -245,8 +245,8 @@ export default function AdminWorkspace({ admin, onLogout }: AdminWorkspaceProps)
                   </button>
                 ))}
             </div>
-            <div className="border-t border-blue-900 p-3">
-              <button type="button" onClick={onLogout} className="flex min-h-[42px] w-full items-center gap-2 px-3 text-xs text-rose-300">
+            <div className="border-t border-white/15 p-3">
+              <button type="button" onClick={onLogout} className="flex min-h-[42px] w-full items-center gap-2 px-3 text-xs text-white">
                 <LogOut className="h-4 w-4" /> Log Out
               </button>
             </div>

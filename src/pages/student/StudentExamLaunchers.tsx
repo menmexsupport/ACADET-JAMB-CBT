@@ -178,7 +178,7 @@ export function StartCbtView({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">
+        <h1 className="font-display text-xl font-bold text-[#0B5E2E] sm:text-2xl dark:text-white">
           Select your four subjects
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -197,10 +197,10 @@ export function StartCbtView({
               key={c.id}
               type="button"
               onClick={() => applyCombination(c)}
-              className="min-h-[44px] rounded-md border border-slate-200 p-2.5 text-left hover:border-[#1D4ED8] hover:bg-blue-50/40 dark:border-slate-700 dark:hover:bg-blue-950/30"
+              className="min-h-[44px] rounded-md border border-slate-200 p-2.5 text-left hover:border-[#0B5E2E] hover:bg-emerald-50/40 dark:border-slate-700 dark:hover:bg-emerald-950/30"
             >
               <p className="truncate text-xs font-bold text-slate-900 dark:text-white">{c.name}</p>
-              <p className="mt-0.5 font-mono text-[11px] text-[#1D4ED8] dark:text-blue-400">
+              <p className="mt-0.5 font-mono text-[11px] text-[#0B5E2E] dark:text-emerald-400">
                 {c.subjectCodes.join(' · ')}
               </p>
             </button>
@@ -212,7 +212,7 @@ export function StartCbtView({
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
         <div className="rounded-lg border border-slate-300 bg-white p-4 sm:p-5 lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
-            <h2 className="text-sm font-bold text-[#0F2447] dark:text-white">
+            <h2 className="text-sm font-bold text-[#0B5E2E] dark:text-white">
               Choose 3 Subjects ({selectedElectiveIds.length}/3 selected)
             </h2>
             {englishSubject && (
@@ -232,7 +232,7 @@ export function StartCbtView({
               <button
                 type="button"
                 onClick={loadSubjects}
-                className="mt-2 rounded-md bg-[#0F2447] px-3 py-1.5 text-xs font-semibold text-white"
+                className="mt-2 rounded-md bg-[#0B5E2E] px-3 py-1.5 text-xs font-semibold text-white"
               >
                 Try Again
               </button>
@@ -248,7 +248,7 @@ export function StartCbtView({
                     onClick={() => toggleElective(sub.id)}
                     className={`flex min-h-[48px] items-center justify-between rounded-md border px-3 py-2.5 text-left ${
                       selected
-                        ? 'border-[#1D4ED8] bg-blue-50 text-slate-950 dark:border-blue-500 dark:bg-blue-950/60 dark:text-white'
+                        ? 'border-[#0B5E2E] bg-emerald-50 text-slate-950 dark:border-emerald-500 dark:bg-emerald-950/60 dark:text-white'
                         : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'
                     }`}
                   >
@@ -258,7 +258,7 @@ export function StartCbtView({
                         {sub.code} · {sub.questionCount || 0} questions
                       </p>
                     </div>
-                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-[#1D4ED8]" />}
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-[#0B5E2E]" />}
                   </button>
                 );
               })}
@@ -268,7 +268,7 @@ export function StartCbtView({
 
         <div className="rounded-lg border border-slate-300 bg-white p-4 sm:p-5 lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
           <div className="border-b border-slate-200 pb-3 dark:border-slate-800">
-            <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">
+            <h2 className="font-display text-base font-bold text-[#0B5E2E] dark:text-white">
               Examination Summary
             </h2>
             {student && (
@@ -299,7 +299,7 @@ export function StartCbtView({
                   onClick={() => setExamMode('timed')}
                   className={`min-h-[38px] rounded-sm text-xs font-semibold ${
                     examMode === 'timed'
-                      ? 'bg-white text-[#0F2447] dark:bg-slate-900 dark:text-white'
+                      ? 'bg-white text-[#0B5E2E] dark:bg-slate-900 dark:text-white'
                       : 'text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -310,7 +310,7 @@ export function StartCbtView({
                   onClick={() => setExamMode('revision')}
                   className={`min-h-[38px] rounded-sm text-xs font-semibold ${
                     examMode === 'revision'
-                      ? 'bg-white text-[#0F2447] dark:bg-slate-900 dark:text-white'
+                      ? 'bg-white text-[#0B5E2E] dark:bg-slate-900 dark:text-white'
                       : 'text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -455,14 +455,14 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">Practice Tests</h1>
+        <h1 className="font-display text-xl font-bold text-[#0B5E2E] sm:text-2xl dark:text-white">Practice Tests</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Practise one subject or topic at a time, or pick a ready-made test paper below.
         </p>
       </div>
 
       <div className="rounded-lg border border-slate-300 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="font-display text-sm font-bold text-[#0F2447] dark:text-white">Set Up Single-Subject Practice</h2>
+        <h2 className="font-display text-sm font-bold text-[#0B5E2E] dark:text-white">Set Up Single-Subject Practice</h2>
 
         <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
@@ -554,7 +554,7 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
               type="checkbox"
               checked={randomize}
               onChange={(e) => setRandomize(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-[#1D4ED8]"
+              className="h-4 w-4 rounded border-slate-300 text-[#0B5E2E]"
             />
             Mix question order
           </label>
@@ -563,7 +563,7 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
             type="button"
             disabled={launching}
             onClick={startCustomPractice}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-[#0F2447] px-5 text-sm font-semibold text-white hover:bg-[#173566] disabled:opacity-50"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-[#0B5E2E] px-5 text-sm font-semibold text-white hover:bg-[#084722] disabled:opacity-50"
           >
             <Play className="h-4 w-4" />
             <span>{launching ? 'Starting...' : 'Start Practice Test'}</span>
@@ -574,12 +574,12 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
       </div>
 
       <div>
-        <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">Ready-Made Practice Papers</h2>
+        <h2 className="font-display text-base font-bold text-[#0B5E2E] dark:text-white">Ready-Made Practice Papers</h2>
         <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {blueprints.map((bp) => (
             <div key={bp.id} className="flex flex-col justify-between rounded-lg border border-slate-300 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <div>
-                <p className="text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">
+                <p className="text-xs font-semibold text-[#0B5E2E] dark:text-emerald-400">
                   {bp.questionCount} Questions · {bp.durationMinutes} Minutes
                 </p>
                 <h3 className="mt-1 font-display text-base font-bold text-slate-900 dark:text-white">{bp.title}</h3>
@@ -589,7 +589,7 @@ export function PracticeExamsView({ onSessionStarted }: { onSessionStarted: (ses
                 type="button"
                 disabled={launching}
                 onClick={() => launchBlueprint(bp)}
-                className="mt-4 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md bg-[#0F2447] px-4 text-xs font-semibold text-white hover:bg-[#173566]"
+                className="mt-4 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md bg-[#0B5E2E] px-4 text-xs font-semibold text-white hover:bg-[#084722]"
               >
                 <Play className="h-3.5 w-3.5" />
                 <span>Start Examination</span>
@@ -650,7 +650,7 @@ export function MockExamsView({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">Mock Examinations</h1>
+        <h1 className="font-display text-xl font-bold text-[#0B5E2E] sm:text-2xl dark:text-white">Mock Examinations</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Scheduled timed tests that match official UTME rules.
         </p>
@@ -676,7 +676,7 @@ export function MockExamsView({
                     m.windowStatus === 'active'
                       ? 'text-emerald-700'
                       : m.windowStatus === 'upcoming'
-                      ? 'text-[#1D4ED8]'
+                      ? 'text-[#0B5E2E]'
                       : 'text-slate-500'
                   }`}
                 >
@@ -694,7 +694,7 @@ export function MockExamsView({
                 Opens: {new Date(m.startAt).toLocaleDateString()} · Closes: {new Date(m.endAt).toLocaleDateString()}
               </p>
 
-              <p className="mt-1.5 text-xs font-medium text-[#1D4ED8] dark:text-blue-400">
+              <p className="mt-1.5 text-xs font-medium text-[#0B5E2E] dark:text-emerald-400">
                 Subjects: {m.subjects.map((s) => s.name).join(', ')}
               </p>
 
@@ -703,7 +703,7 @@ export function MockExamsView({
                   <button
                     type="button"
                     onClick={() => onViewResult(m.sessionId!)}
-                    className="min-h-[40px] rounded-md border border-[#1D4ED8] px-4 text-xs font-semibold text-[#1D4ED8] hover:bg-blue-50 dark:text-blue-400"
+                    className="min-h-[40px] rounded-md border border-[#0B5E2E] px-4 text-xs font-semibold text-[#0B5E2E] hover:bg-emerald-50 dark:text-emerald-400"
                   >
                     View Result
                   </button>
@@ -720,7 +720,7 @@ export function MockExamsView({
                   <button
                     type="button"
                     onClick={() => registerMock(m.id)}
-                    className="min-h-[40px] rounded-md bg-[#0F2447] px-4 text-xs font-semibold text-white hover:bg-[#173566]"
+                    className="min-h-[40px] rounded-md bg-[#0B5E2E] px-4 text-xs font-semibold text-white hover:bg-[#084722]"
                   >
                     Register for Mock
                   </button>
@@ -792,7 +792,7 @@ export function PastQuestionsView({ onSessionStarted }: { onSessionStarted: (ses
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">Past Questions</h1>
+          <h1 className="font-display text-xl font-bold text-[#0B5E2E] sm:text-2xl dark:text-white">Past Questions</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Browse questions by subject and reveal answers with explanations.
           </p>
@@ -857,7 +857,7 @@ export function PastQuestionsView({ onSessionStarted }: { onSessionStarted: (ses
             return (
               <div key={q.id} className="rounded-lg border border-slate-300 bg-white p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5 dark:border-slate-800">
-                  <span className="text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">
+                  <span className="text-xs font-semibold text-[#0B5E2E] dark:text-emerald-400">
                     Question {idx + 1} · {q.subjectName} · {q.topicName} ·{' '}
                     {q.questionSource === 'verified_past_question'
                       ? `Past Question${q.examYear ? ` (${q.examYear})` : ''}`
@@ -943,7 +943,7 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-xl font-bold text-[#0F2447] sm:text-2xl dark:text-white">
+          <h1 className="font-display text-xl font-bold text-[#0B5E2E] sm:text-2xl dark:text-white">
             JAMB Subjects ({subjects.length})
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -967,7 +967,7 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
             onClick={() => setCategoryFilter(cat)}
             className={`min-h-[38px] rounded-md border px-3 text-xs font-semibold whitespace-nowrap ${
               categoryFilter === cat
-                ? 'border-[#0F2447] bg-[#0F2447] text-white dark:border-blue-600 dark:bg-blue-600'
+                ? 'border-[#0B5E2E] bg-[#0B5E2E] text-white dark:border-emerald-700 dark:bg-emerald-700'
                 : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
             }`}
           >
@@ -986,7 +986,7 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
           <button
             type="button"
             onClick={loadSubjects}
-            className="mt-3 rounded-md bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white"
+            className="mt-3 rounded-md bg-[#0B5E2E] px-4 py-2 text-xs font-semibold text-white"
           >
             Try Again
           </button>
@@ -996,7 +996,7 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
           {filteredSubjects.map((sub) => (
             <div key={sub.id} className="flex flex-col justify-between rounded-lg border border-slate-300 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <div>
-                <p className="font-mono text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">
+                <p className="font-mono text-xs font-semibold text-[#0B5E2E] dark:text-emerald-400">
                   {sub.code} · {sub.isCompulsory ? 'Compulsory' : sub.category} · {sub.questionCount || 0} Qs
                 </p>
                 <h2 className="mt-1 font-display text-base font-bold text-slate-900 dark:text-white">{sub.name}</h2>
@@ -1010,7 +1010,7 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
               <button
                 type="button"
                 onClick={() => onLaunchSubject(sub.id)}
-                className="mt-4 min-h-[40px] rounded-md border border-[#1D4ED8] px-3 text-xs font-semibold text-[#1D4ED8] hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40"
+                className="mt-4 min-h-[40px] rounded-md border border-[#0B5E2E] px-3 text-xs font-semibold text-[#0B5E2E] hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
               >
                 Practise {sub.name}
               </button>
@@ -1020,13 +1020,13 @@ export function SubjectsView({ onLaunchSubject }: { onLaunchSubject: (subjectId:
       )}
 
       <div className="rounded-lg border border-slate-300 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="font-display text-base font-bold text-[#0F2447] dark:text-white">Common Course Combinations</h2>
+        <h2 className="font-display text-base font-bold text-[#0B5E2E] dark:text-white">Common Course Combinations</h2>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           {combinations.map((c) => (
             <div key={c.id} className="rounded-md border border-slate-200 p-3.5 dark:border-slate-800">
               <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{c.faculty}</p>
               <h3 className="mt-0.5 text-sm font-bold text-slate-900 dark:text-white">{c.name}</h3>
-              <p className="mt-0.5 font-mono text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">{c.subjectCodes.join(' · ')}</p>
+              <p className="mt-0.5 font-mono text-xs font-semibold text-[#0B5E2E] dark:text-emerald-400">{c.subjectCodes.join(' · ')}</p>
               <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{c.description}</p>
             </div>
           ))}

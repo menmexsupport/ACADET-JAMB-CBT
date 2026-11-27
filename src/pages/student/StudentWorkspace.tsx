@@ -6,24 +6,25 @@ import {
   Bell,
   BookOpen,
   CheckCircle2,
-  ChevronRight,
   ClipboardCheck,
   Download,
   Eye,
   FileQuestion,
   FileText,
-  GraduationCap,
   Home,
   LayoutGrid,
   LogOut,
   Moon,
   Play,
   Settings as SettingsIcon,
+  Shuffle,
   Sliders,
   Sun,
+  Trophy,
   User as UserIcon,
   X,
 } from 'lucide-react';
+import BrandEmblem from '../../components/common/BrandEmblem.tsx';
 import SampleCbtPreview, { SampleSubject } from '../../components/exam/SampleCbtPreview.tsx';
 import { apiFetch, setSessionToken } from '../../lib/api.ts';
 import { AuthUser, ExamResultItem, SubjectItem, UserPreferences } from '../../types/index.ts';
@@ -53,6 +54,7 @@ export type StudentTab =
   | 'results'
   | 'analytics'
   | 'materials'
+  | 'leaderboard'
   | 'notifications'
   | 'profile'
   | 'settings';
@@ -66,12 +68,25 @@ interface StudentWorkspaceProps {
   initialResultSessionId?: string | null;
 }
 
+interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  fullName: string;
+  intendedCourse: string;
+  jambYear: number;
+  bestScoreOutOf400: number;
+  averagePercentage: number;
+  attemptsCount: number;
+  isCurrentUser: boolean;
+}
+
 interface DashboardResponse {
   stats: {
     totalAttempted: number;
     averagePercentage: number;
     highestPercentage: number;
     highestScoreOutOf400: number;
+    totalQuestionsAttempted: number;
     overallProgress: number;
     unreadNotificationsCount: number;
   };
@@ -85,6 +100,14 @@ interface DashboardResponse {
   announcements: Array<{ id: string; title: string; body: string; isPinned: boolean; createdAt: string }>;
   practiceExams: Array<{ id: string; title: string; durationMinutes: number; questionCount: number }>;
   upcomingMocks: Array<{ id: string; title: string; startAt: string; durationMinutes: number }>;
+  availableMaterials?: Array<{
+    id: string;
+    title: string;
+    category: string;
+    subjectName: string;
+    fileSizeBytes: number;
+  }>;
+  leaderboard?: LeaderboardEntry[];
 }
 
 interface StudyMaterialRow {
@@ -120,6 +143,8 @@ export default function StudentWorkspace({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [showSampleCbt, setShowSampleCbt] = useState(false);
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [randomLaunching, setRandomLaunching] = useState(false);
+  const [quickLaunchMsg, setQuickLaunchMsg] = useState<string | null>(null);
   const [resultSessionToOpen, setResultSessionToOpen] = useState<string | null>(initialResultSessionId);
   const [selectedFourSubjects, setSelectedFourSubjects] = useState<SampleSubject[]>(() => {
     try {
@@ -150,6 +175,8 @@ export default function StudentWorkspace({
   const [matSubjectId, setMatSubjectId] = useState('');
   const [matCategory, setMatCategory] = useState('All');
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   const [profileForm, setProfileForm] = useState({
     fullName: user.fullName,
@@ -200,6 +227,16 @@ export default function StudentWorkspace({
     }
   }, [tab]);
 
+  useEffect(() => {
+    if (tab === 'leaderboard') {
+      setLeaderboardLoading(true);
+      apiFetch<{ leaderboard: LeaderboardEntry[] }>('/api/student/leaderboard')
+        .then((r) => setLeaderboardRows(r.leaderboard))
+        .catch(() => {})
+        .finally(() => setLeaderboardLoading(false));
+    }
+  }, [tab]);
+
   const handleQuickLaunchSubject = async (subjectId: string) => {
     try {
       const res = await apiFetch<{ sessionId: string }>('/api/exams/start', {
@@ -215,6 +252,41 @@ export default function StudentWorkspace({
       onEnterExam(res.sessionId);
     } catch {
       // handled gracefully
+    }
+  };
+
+  const handleStartRandomPractice = async () => {
+    try {
+      setRandomLaunching(true);
+      setQuickLaunchMsg(null);
+      const subRes = await apiFetch<{ subjects: SubjectItem[] }>('/api/student/subjects');
+      const selectedCodes = new Set(selectedFourSubjects.map((s) => s.code));
+      let matchedIds = subRes.subjects
+        .filter((s) => selectedCodes.has(s.code) && (s.questionCount || 0) > 0)
+        .map((s) => s.id);
+      if (matchedIds.length === 0) {
+        matchedIds = subRes.subjects.filter((s) => (s.questionCount || 0) > 0).slice(0, 4).map((s) => s.id);
+      }
+      if (matchedIds.length === 0) {
+        setQuickLaunchMsg('No active questions available yet for random practice.');
+        setRandomLaunching(false);
+        return;
+      }
+      const res = await apiFetch<{ sessionId: string }>('/api/exams/start', {
+        method: 'POST',
+        body: JSON.stringify({
+          examType: 'practice',
+          examMode: 'timed',
+          subjectIds: matchedIds,
+          questionCount: 20,
+          durationMinutes: 25,
+          randomize: true,
+        }),
+      });
+      onEnterExam(res.sessionId);
+    } catch (err) {
+      setQuickLaunchMsg(err instanceof Error ? err.message : 'Unable to start random practice.');
+      setRandomLaunching(false);
     }
   };
 
@@ -284,25 +356,26 @@ export default function StudentWorkspace({
   };
 
   const navItems: Array<{ id: StudentTab; label: string; icon: typeof Home }> = [
-    { id: 'dashboard', label: 'Home', icon: Home },
-    { id: 'start-cbt', label: 'Start Examination', icon: Play },
-    { id: 'practice', label: 'Practice Tests', icon: Sliders },
-    { id: 'mocks', label: 'Mock Exams', icon: Award },
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'start-cbt', label: 'Take CBT', icon: Play },
+    { id: 'practice', label: 'Practice by Subject', icon: Sliders },
+    { id: 'mocks', label: 'Mock Examination', icon: Award },
     { id: 'past-questions', label: 'Past Questions', icon: FileQuestion },
     { id: 'subjects', label: 'Subjects', icon: BookOpen },
-    { id: 'results', label: 'Results', icon: ClipboardCheck },
+    { id: 'results', label: 'My Results', icon: ClipboardCheck },
     { id: 'analytics', label: 'Performance', icon: BarChart3 },
-    { id: 'materials', label: 'Study Notes', icon: FileText },
+    { id: 'materials', label: 'Study Materials', icon: FileText },
+    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: 'notifications', label: 'Messages', icon: Bell },
-    { id: 'profile', label: 'Profile', icon: UserIcon },
+    { id: 'profile', label: 'My Profile', icon: UserIcon },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
   const primaryMobileTabs: Array<{ id: StudentTab; label: string; icon: typeof Home }> = [
-    { id: 'dashboard', label: 'Home', icon: Home },
-    { id: 'start-cbt', label: 'Start Exam', icon: Play },
-    { id: 'past-questions', label: 'Past Qs', icon: FileQuestion },
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'start-cbt', label: 'Take CBT', icon: Play },
     { id: 'results', label: 'Results', icon: ClipboardCheck },
+    { id: 'materials', label: 'Materials', icon: FileText },
   ];
 
   const secondaryMobileItems = navItems.filter(
@@ -315,6 +388,7 @@ export default function StudentWorkspace({
   const selectTab = (next: StudentTab) => {
     setTab(next);
     setMobileNavOpen(false);
+    setQuickLaunchMsg(null);
   };
 
   if (showSampleCbt) {
@@ -329,14 +403,19 @@ export default function StudentWorkspace({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F4F6F9] text-[#0F172A] dark:bg-slate-950 dark:text-slate-100">
-      {/* Desktop Navigation Sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-800 bg-[#0F2447] text-blue-100 lg:flex">
-        <div className="flex h-14 items-center gap-2.5 border-b border-blue-900/70 px-4">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#1D4ED8] text-white">
-            <GraduationCap className="h-4 w-4" />
-          </span>
-          <span className="font-display text-sm font-bold text-white">Acadet CBT JAMB</span>
+    <div className="flex min-h-screen bg-[#F2F4F7] text-[#111827] dark:bg-slate-950 dark:text-slate-100">
+      {/* Deep Green Institutional Navigation Sidebar */}
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-[#094D25] bg-[#0B5E2E] text-emerald-50 lg:flex">
+        <div className="flex h-16 items-center gap-2.5 border-b border-white/15 px-4">
+          <BrandEmblem sizeClass="h-9 w-9" />
+          <div className="min-w-0 leading-tight">
+            <span className="block truncate font-display text-sm font-bold text-white">
+              Pre-JAMB Academy CBT
+            </span>
+            <span className="block truncate text-[10px] text-emerald-100">
+              Candidate Portal
+            </span>
+          </div>
         </div>
 
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2.5 py-3">
@@ -349,24 +428,35 @@ export default function StudentWorkspace({
                 type="button"
                 onClick={() => selectTab(item.id)}
                 className={`flex min-h-[40px] w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm font-medium ${
-                  active ? 'bg-[#1D4ED8] text-white' : 'text-blue-200 hover:bg-blue-900/60 hover:text-white'
+                  active
+                    ? 'bg-white font-bold text-[#0B5E2E]'
+                    : 'text-emerald-50 hover:bg-[#094D25] hover:text-white'
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="truncate">{item.label}</span>
+                {item.id === 'notifications' && (dashboard?.stats.unreadNotificationsCount || 0) > 0 && (
+                  <span
+                    className={`ml-auto rounded-sm px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums ${
+                      active ? 'bg-[#0B5E2E] text-white' : 'bg-amber-400 text-[#111827]'
+                    }`}
+                  >
+                    {dashboard?.stats.unreadNotificationsCount}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
-        <div className="border-t border-blue-900/70 p-2.5">
+        <div className="border-t border-white/15 p-2.5">
           <button
             type="button"
             onClick={onLogout}
-            className="flex min-h-[40px] w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-rose-300 hover:bg-rose-950/50"
+            className="flex min-h-[40px] w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-semibold text-white hover:bg-[#094D25]"
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            <span>Log Out</span>
+            <span>Logout</span>
           </button>
         </div>
       </aside>
@@ -382,14 +472,14 @@ export default function StudentWorkspace({
             aria-modal="true"
             aria-label="More options"
             onClick={(e) => e.stopPropagation()}
-            className="w-full rounded-t-xl border-t border-slate-300 bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-800 dark:bg-slate-900"
+            className="w-full rounded-t-lg border-t border-[#CBD5E1] bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-800 dark:bg-slate-900"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3 dark:border-slate-800">
               <div className="min-w-0">
-                <p className="truncate font-display text-sm font-bold text-[#0F2447] dark:text-white">
+                <p className="truncate font-display text-sm font-bold text-[#0B5E2E] dark:text-emerald-400">
                   {user.fullName}
                 </p>
-                <p className="font-mono text-xs text-slate-600 dark:text-slate-400">
+                <p className="font-mono text-xs text-[#4B5563] dark:text-slate-400">
                   {user.registrationNumber}
                 </p>
               </div>
@@ -397,7 +487,7 @@ export default function StudentWorkspace({
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
                 aria-label="Close menu"
-                className="flex h-11 w-11 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                className="flex h-11 w-11 items-center justify-center rounded-md text-[#4B5563] hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -415,8 +505,8 @@ export default function StudentWorkspace({
                       onClick={() => selectTab(item.id)}
                       className={`flex min-h-[48px] items-center gap-2.5 rounded-md border px-3 py-2 text-left text-sm font-medium ${
                         active
-                          ? 'border-[#1D4ED8] bg-blue-50 text-[#1D4ED8] dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-300'
-                          : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
+                          ? 'border-[#0B5E2E] bg-emerald-50 font-bold text-[#0B5E2E] dark:border-emerald-500 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
                       }`}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
@@ -431,7 +521,7 @@ export default function StudentWorkspace({
                 })}
               </div>
 
-              <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+              <div className="mt-3 border-t border-[#E5E7EB] pt-3 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => {
@@ -441,7 +531,7 @@ export default function StudentWorkspace({
                   className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
                 >
                   <LogOut className="h-4 w-4 shrink-0" />
-                  <span>Log Out</span>
+                  <span>Logout</span>
                 </button>
               </div>
             </div>
@@ -451,45 +541,45 @@ export default function StudentWorkspace({
 
       {/* Main Content Shell */}
       <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
-        {/* Compact Top Bar (52px mobile / 56px desktop) */}
-        <header className="sticky top-0 z-30 flex h-[52px] items-center justify-between border-b border-[#E2E8F0] bg-white px-4 sm:px-6 lg:h-14 dark:border-slate-800 dark:bg-slate-900">
+        {/* Top Portal Header */}
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#CBD5E1] bg-white px-4 sm:px-6 lg:h-16 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex min-w-0 items-center gap-2.5">
             {tab !== 'dashboard' ? (
               <button
                 type="button"
                 onClick={() => selectTab('dashboard')}
-                aria-label="Back to Home"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#0F172A] hover:bg-[#F8FAFC] lg:hidden dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Back to Dashboard"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-[#111827] hover:bg-slate-100 lg:hidden dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
             ) : (
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0F2447] text-white lg:hidden">
-                <GraduationCap className="h-4 w-4" />
-              </span>
+              <div className="lg:hidden">
+                <BrandEmblem sizeClass="h-8 w-8" />
+              </div>
             )}
-            <h2 className="truncate font-display text-base font-bold text-[#0F172A] dark:text-white">
+            <h2 className="truncate font-display text-base font-bold text-[#111827] dark:text-white">
               {tab === 'dashboard' ? (
                 <>
-                  <span className="lg:hidden">Acadet CBT</span>
-                  <span className="hidden lg:inline">Home</span>
+                  <span className="lg:hidden">Pre-JAMB Academy CBT</span>
+                  <span className="hidden lg:inline">Candidate Dashboard</span>
                 </>
               ) : (
-                navItems.find((n) => n.id === tab)?.label || 'Student Portal'
+                navItems.find((n) => n.id === tab)?.label || 'Candidate Portal'
               )}
             </h2>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
             <button
               type="button"
               onClick={() => selectTab('notifications')}
               aria-label="Messages"
-              className="relative flex h-11 w-11 items-center justify-center rounded-lg text-[#475569] hover:bg-[#F8FAFC] dark:text-slate-300 dark:hover:bg-slate-800"
+              className="relative flex h-10 w-10 items-center justify-center rounded-md border border-[#CBD5E1] text-[#374151] hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              <Bell className="h-5 w-5 lg:h-4 lg:w-4" />
+              <Bell className="h-4 w-4" />
               {(dashboard?.stats.unreadNotificationsCount || 0) > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-sm bg-[#B45309] px-1 font-mono text-[10px] font-bold text-white tabular-nums">
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-sm bg-[#DC2626] px-1 font-mono text-[10px] font-bold text-white tabular-nums">
                   {dashboard?.stats.unreadNotificationsCount}
                 </span>
               )}
@@ -498,70 +588,60 @@ export default function StudentWorkspace({
             <button
               type="button"
               onClick={() => selectTab('profile')}
-              aria-label="Profile"
-              className="flex h-11 items-center gap-2 rounded-lg border border-[#E2E8F0] px-2 text-left hover:bg-[#F8FAFC] sm:px-2.5 dark:border-slate-700 dark:hover:bg-slate-800"
+              aria-label="My Profile"
+              className="flex h-10 items-center gap-2 rounded-md border border-[#CBD5E1] px-2.5 text-left hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               <div className="hidden text-right sm:block">
-                <p className="font-mono text-xs font-bold text-[#0F172A] tabular-nums dark:text-white">
+                <p className="font-mono text-xs font-bold text-[#111827] tabular-nums dark:text-white">
                   {user.registrationNumber}
                 </p>
-                <p className="text-[11px] text-[#475569] dark:text-slate-400">{user.fullName}</p>
+                <p className="text-[11px] text-[#4B5563] dark:text-slate-400">{user.fullName}</p>
               </div>
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#0F2447] text-xs font-bold text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#0B5E2E] text-xs font-bold text-white">
                 {user.fullName.charAt(0).toUpperCase()}
               </span>
             </button>
           </div>
         </header>
 
-        <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-4 sm:px-6 sm:py-6">
+        <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 sm:px-6 sm:py-6">
           {tab === 'dashboard' && (
-            <div className="space-y-3.5 sm:space-y-5">
-              {/* Candidate Identity Card */}
-              <section className="rounded-[14px] border border-[#E2E8F0] bg-white p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+            <div className="space-y-5">
+              {/* Candidate Welcome & Selected Subjects Card */}
+              <section className="rounded-md border border-[#CBD5E1] bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold tracking-wide text-[#475569] uppercase dark:text-slate-400">
+                    <p className="text-xs font-bold tracking-wide text-[#0B5E2E] uppercase dark:text-emerald-400">
                       {user.jambYear} UTME · {user.intendedCourse || 'General Candidate'}
                     </p>
-                    <h1 className="mt-1 font-display text-lg font-bold text-[#0F172A] sm:text-xl dark:text-white">
-                      {user.fullName}
+                    <h1 className="mt-1 font-display text-xl font-bold text-[#111827] sm:text-2xl dark:text-white">
+                      Welcome back, {user.fullName}.
                     </h1>
-                    <p className="mt-0.5 font-mono text-xs font-semibold text-[#475569] tabular-nums dark:text-slate-400">
-                      Reg No: <span className="text-[#0F172A] dark:text-white">{user.registrationNumber}</span>
+                    <p className="mt-0.5 font-mono text-xs font-semibold text-[#4B5563] tabular-nums dark:text-slate-400">
+                      Reg. No: <span className="text-[#111827] dark:text-white">{user.registrationNumber}</span>
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-2 sm:shrink-0 sm:flex-row sm:items-center">
-                    <button
-                      type="button"
-                      onClick={() => selectTab('start-cbt')}
-                      className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#1D4ED8] px-5 text-sm font-semibold text-white hover:bg-blue-800 sm:w-auto"
-                    >
-                      <Play className="h-4 w-4" />
-                      <span>Start Examination</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowSampleCbt(true)}
-                      className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-[10px] border border-[#E2E8F0] bg-white px-4 text-sm font-semibold text-[#0F172A] hover:bg-[#F8FAFC] sm:w-auto dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
-                    >
-                      <Eye className="h-4 w-4 text-[#1D4ED8]" />
-                      <span>Preview CBT Screen</span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowSampleCbt(true)}
+                    className="inline-flex min-h-[40px] shrink-0 items-center justify-center gap-1.5 rounded-md border border-[#CBD5E1] bg-[#F9FAFB] px-3.5 text-xs font-bold text-[#111827] hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    <Eye className="h-4 w-4 text-[#0B5E2E]" />
+                    <span>Preview CBT Screen</span>
+                  </button>
                 </div>
 
                 {/* Selected 4 UTME Subjects */}
-                <div className="mt-4 border-t border-[#E2E8F0] pt-3.5 dark:border-slate-800">
+                <div className="mt-4 border-t border-[#E5E7EB] pt-3.5 dark:border-slate-800">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-[#475569] dark:text-slate-400">
-                      Selected 4 UTME Subjects
+                    <p className="text-xs font-semibold text-[#4B5563] dark:text-slate-400">
+                      Registered Four-Subject Combination
                     </p>
                     <button
                       type="button"
                       onClick={() => selectTab('start-cbt')}
-                      className="text-xs font-semibold text-[#1D4ED8] hover:underline dark:text-blue-400"
+                      className="text-xs font-bold text-[#0B5E2E] hover:underline dark:text-emerald-400"
                     >
                       Change subjects
                     </button>
@@ -570,13 +650,13 @@ export default function StudentWorkspace({
                     {selectedFourSubjects.map((sub, idx) => (
                       <div
                         key={sub.code}
-                        className="flex min-h-[38px] items-center justify-between gap-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1.5 dark:border-slate-800 dark:bg-slate-950"
+                        className="flex min-h-[38px] items-center justify-between gap-1.5 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1.5 dark:border-slate-800 dark:bg-slate-950"
                       >
-                        <span className="truncate text-xs font-semibold text-[#0F172A] dark:text-slate-200">
+                        <span className="truncate text-xs font-semibold text-[#111827] dark:text-slate-200">
                           {sub.name}
                         </span>
-                        <span className="shrink-0 font-mono text-[10px] font-bold text-[#1D4ED8] dark:text-blue-400">
-                          {idx === 0 ? 'CORE' : sub.code}
+                        <span className="shrink-0 font-mono text-[10px] font-bold text-[#0B5E2E] dark:text-emerald-400">
+                          {idx === 0 ? 'COMP' : sub.code}
                         </span>
                       </div>
                     ))}
@@ -584,150 +664,139 @@ export default function StudentWorkspace({
                 </div>
               </section>
 
-              {/* Continue Active Test Notice */}
-              {dashboard?.activeSession && (
-                <section className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/50">
-                  <div>
-                    <p className="text-sm font-bold text-[#B45309] dark:text-amber-200">
-                      Unfinished Examination: {dashboard.activeSession.examTitle}
-                    </p>
-                    <p className="text-xs text-amber-900 dark:text-amber-300">
-                      {dashboard.activeSession.totalQuestions} questions · Your previous answers are saved.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onEnterExam(dashboard.activeSession!.id)}
-                    className="min-h-[44px] w-full rounded-[10px] bg-[#B45309] px-4 py-2 text-xs font-bold text-white hover:bg-amber-800 sm:w-auto"
-                  >
-                    Continue Examination
-                  </button>
-                </section>
-              )}
-
-              {/* Compact 2x2 UTME Metrics Grid (4-col desktop) */}
+              {/* 4-Stat Overview Strip */}
               <section
-                aria-label="UTME performance summary"
-                className="grid grid-cols-2 overflow-hidden rounded-[14px] border border-[#E2E8F0] bg-white sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900"
+                aria-label="Examination statistics"
+                className="grid grid-cols-2 overflow-hidden rounded-md border border-[#CBD5E1] bg-white sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900"
               >
-                <div className="border-r border-b border-[#E2E8F0] p-4 sm:border-b-0 dark:border-slate-800">
-                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Tests Taken</p>
-                  <p className="mt-1 font-mono text-2xl font-bold text-[#0F172A] tabular-nums dark:text-white">
+                <div className="border-r border-b border-[#CBD5E1] p-4 sm:border-b-0 dark:border-slate-800">
+                  <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">
+                    Total Examinations Taken
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-[#111827] tabular-nums dark:text-white">
                     {dashboard?.stats.totalAttempted ?? 0}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">Completed exams</p>
                 </div>
 
-                <div className="border-b border-[#E2E8F0] p-4 sm:border-r sm:border-b-0 dark:border-slate-800">
-                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Average Score</p>
-                  <p className="mt-1 font-mono text-2xl font-bold text-[#1D4ED8] tabular-nums dark:text-blue-400">
+                <div className="border-b border-[#CBD5E1] p-4 sm:border-r sm:border-b-0 dark:border-slate-800">
+                  <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">Average Score</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
                     {dashboard?.stats.averagePercentage ?? 0}%
                   </p>
-                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">Overall accuracy</p>
                 </div>
 
-                <div className="border-r border-[#E2E8F0] p-4 dark:border-slate-800">
-                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Highest UTME Score</p>
-                  <p className="mt-1 font-mono text-2xl font-bold text-[#15803D] tabular-nums dark:text-emerald-400">
+                <div className="border-r border-[#CBD5E1] p-4 dark:border-slate-800">
+                  <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">Highest Score</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
                     {dashboard?.stats.highestScoreOutOf400 ?? 0}/400
                   </p>
-                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">UTME 400 scale</p>
                 </div>
 
                 <div className="p-4">
-                  <p className="text-xs font-medium text-[#475569] dark:text-slate-400">Overall Progress</p>
-                  <p className="mt-1 font-mono text-2xl font-bold text-[#15803D] tabular-nums dark:text-emerald-400">
-                    {dashboard?.stats.overallProgress ?? 0}%
+                  <p className="text-xs font-medium text-[#4B5563] dark:text-slate-400">
+                    Questions Attempted
                   </p>
-                  <p className="mt-0.5 text-[11px] text-[#475569] dark:text-slate-500">Readiness score</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-[#111827] tabular-nums dark:text-white">
+                    {dashboard?.stats.totalQuestionsAttempted ?? 0}
+                  </p>
                 </div>
               </section>
 
-              {/* Focused Study & CBT Action Cards */}
-              <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => selectTab('start-cbt')}
-                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">4-Subject JAMB CBT</p>
-                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
-                      Timed full UTME simulation with Use of English and 3 subjects.
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
-                </button>
+              {/* Prominent START YOUR CBT PRACTICE Card */}
+              <section className="rounded-md border border-[#CBD5E1] bg-white dark:border-slate-800 dark:bg-slate-900">
+                <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3.5 dark:border-slate-800 dark:bg-slate-950">
+                  <h2 className="font-display text-sm font-bold tracking-wide text-[#0B5E2E] uppercase dark:text-emerald-400">
+                    START YOUR CBT PRACTICE
+                  </h2>
+                  <p className="mt-0.5 text-xs text-[#4B5563] dark:text-slate-400">
+                    Choose an examination mode and begin your preparation.
+                  </p>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => selectTab('practice')}
-                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">Subject Drill</p>
-                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
-                      Practise one subject or topic at a time with instant scoring.
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
-                </button>
+                <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
+                  <button
+                    type="button"
+                    onClick={() => selectTab('start-cbt')}
+                    className="flex min-h-[52px] items-center justify-center gap-2 rounded-md bg-[#0B5E2E] px-4 py-3 text-sm font-bold text-white hover:bg-[#084722]"
+                  >
+                    <Play className="h-4 w-4 shrink-0" />
+                    <span>Start Full UTME Mock</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => selectTab('past-questions')}
-                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">Past Questions</p>
-                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
-                      Read verified questions by subject and check explanations.
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => selectTab('practice')}
+                    className="flex min-h-[52px] items-center justify-center gap-2 rounded-md border border-[#0B5E2E] bg-white px-4 py-3 text-sm font-bold text-[#0B5E2E] hover:bg-emerald-50 dark:bg-slate-900 dark:text-emerald-400 dark:hover:bg-slate-800"
+                  >
+                    <Sliders className="h-4 w-4 shrink-0" />
+                    <span>Practice by Subject</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => selectTab('results')}
-                  className="flex min-h-[72px] items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] bg-white p-4 text-left hover:border-[#1D4ED8] dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-[#0F172A] dark:text-white">My Results &amp; Corrections</p>
-                    <p className="mt-0.5 text-xs text-[#475569] dark:text-slate-400">
-                      Review past scores out of 400 and answer explanations.
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-[#475569]" />
-                </button>
+                  <button
+                    type="button"
+                    disabled={randomLaunching}
+                    onClick={handleStartRandomPractice}
+                    className="flex min-h-[52px] items-center justify-center gap-2 rounded-md border border-[#CBD5E1] bg-[#F9FAFB] px-4 py-3 text-sm font-bold text-[#111827] hover:bg-slate-100 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    <Shuffle className="h-4 w-4 shrink-0 text-[#0B5E2E]" />
+                    <span>{randomLaunching ? 'Starting...' : 'Random Practice'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (dashboard?.activeSession) {
+                        onEnterExam(dashboard.activeSession.id);
+                      } else {
+                        setQuickLaunchMsg(
+                          'No paused examination in progress. Click "Start Full UTME Mock" or "Practice by Subject" to begin a new test.'
+                        );
+                      }
+                    }}
+                    className={`flex min-h-[52px] items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-bold ${
+                      dashboard?.activeSession
+                        ? 'bg-amber-700 text-white hover:bg-amber-800'
+                        : 'border border-[#CBD5E1] bg-[#F9FAFB] text-[#111827] hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
+                    }`}
+                  >
+                    <Play className={`h-4 w-4 shrink-0 ${dashboard?.activeSession ? 'text-white' : 'text-[#0B5E2E]'}`} />
+                    <span>Continue Previous Examination</span>
+                  </button>
+                </div>
+
+                {quickLaunchMsg && (
+                  <p className="border-t border-[#E5E7EB] bg-[#F9FAFB] px-5 py-2.5 text-xs font-medium text-[#374151] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+                    {quickLaunchMsg}
+                  </p>
+                )}
               </section>
 
-              {/* Recent Results & Notices */}
-              <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-12 lg:gap-5">
-                <div className="rounded-[14px] border border-[#E2E8F0] bg-white lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex items-center justify-between border-b border-[#E2E8F0] px-4 py-3 dark:border-slate-800">
-                    <h2 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">
-                      Recent Examination Results
+              {/* Recent History & Performance Summary */}
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+                <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                    <h2 className="font-display text-sm font-bold text-[#111827] dark:text-white">
+                      Recent Examination History
                     </h2>
                     <button
                       type="button"
                       onClick={() => selectTab('results')}
-                      className="text-xs font-semibold text-[#1D4ED8] hover:underline dark:text-blue-400"
+                      className="text-xs font-bold text-[#0B5E2E] hover:underline dark:text-emerald-400"
                     >
                       View All
                     </button>
                   </div>
-                  <div className="divide-y divide-[#E2E8F0] dark:divide-slate-800">
+                  <div className="divide-y divide-[#E5E7EB] dark:divide-slate-800">
                     {(dashboard?.recentResults || []).length === 0 ? (
-                      <p className="p-4 text-xs text-[#475569] dark:text-slate-400">
-                        No examinations completed yet. Start a test or use Preview CBT Screen above.
+                      <p className="p-4 text-xs text-[#4B5563] dark:text-slate-400">
+                        No examinations completed yet. Start a UTME test above to see your history.
                       </p>
                     ) : (
                       dashboard!.recentResults.map((r) => (
                         <div key={r.id} className="flex items-center justify-between gap-3 px-4 py-3">
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-[#0F172A] dark:text-white">{r.examTitle}</p>
-                            <p className="text-xs text-[#475569] tabular-nums dark:text-slate-400">
+                            <p className="truncate text-sm font-semibold text-[#111827] dark:text-white">{r.examTitle}</p>
+                            <p className="text-xs text-[#4B5563] tabular-nums dark:text-slate-400">
                               {r.correctCount}/{r.totalQuestions} correct · {new Date(r.createdAt).toLocaleDateString()}
                             </p>
                           </div>
@@ -737,7 +806,7 @@ export default function StudentWorkspace({
                               setResultSessionToOpen(r.sessionId);
                               selectTab('results');
                             }}
-                            className="min-h-[36px] shrink-0 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 font-mono text-xs font-bold text-[#1D4ED8] tabular-nums hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                            className="min-h-[34px] shrink-0 rounded-md border border-[#0B5E2E]/30 bg-emerald-50 px-3 py-1 font-mono text-xs font-bold text-[#0B5E2E] tabular-nums hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                           >
                             {r.scoreOutOf400}/400
                           </button>
@@ -745,25 +814,148 @@ export default function StudentWorkspace({
                       ))
                     )}
                   </div>
-                </div>
+                </section>
 
-                <div className="rounded-[14px] border border-[#E2E8F0] bg-white lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
-                  <div className="border-b border-[#E2E8F0] px-4 py-3 dark:border-slate-800">
-                    <h2 className="font-display text-sm font-bold text-[#0F172A] dark:text-white">Notices</h2>
+                <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                    <h2 className="font-display text-sm font-bold text-[#111827] dark:text-white">
+                      Performance Summary
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => selectTab('analytics')}
+                      className="text-xs font-bold text-[#0B5E2E] hover:underline dark:text-emerald-400"
+                    >
+                      Details
+                    </button>
                   </div>
-                  <div className="divide-y divide-[#E2E8F0] dark:divide-slate-800">
-                    {(dashboard?.announcements || []).length === 0 ? (
-                      <p className="p-4 text-xs text-[#475569] dark:text-slate-400">No notices at this time.</p>
+                  <div className="space-y-3 p-4 text-xs">
+                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5 dark:border-slate-800">
+                      <span className="text-[#4B5563] dark:text-slate-400">Readiness Score</span>
+                      <span className="font-mono text-sm font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
+                        {dashboard?.stats.overallProgress ?? 0}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5 dark:border-slate-800">
+                      <span className="text-[#4B5563] dark:text-slate-400">Best Percentage</span>
+                      <span className="font-mono text-sm font-bold text-[#111827] tabular-nums dark:text-white">
+                        {dashboard?.stats.highestPercentage ?? 0}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#4B5563] dark:text-slate-400">Scheduled Upcoming Mocks</span>
+                      <span className="font-mono text-sm font-bold text-[#111827] tabular-nums dark:text-white">
+                        {dashboard?.upcomingMocks?.length ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              {/* Study Materials, Announcements & Leaderboard */}
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+                <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-4 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                    <h2 className="font-display text-sm font-bold text-[#111827] dark:text-white">
+                      Available Study Materials
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => selectTab('materials')}
+                      className="text-xs font-bold text-[#0B5E2E] hover:underline dark:text-emerald-400"
+                    >
+                      All Files
+                    </button>
+                  </div>
+                  <div className="divide-y divide-[#E5E7EB] dark:divide-slate-800">
+                    {(dashboard?.availableMaterials || []).length === 0 ? (
+                      <p className="p-4 text-xs text-[#4B5563] dark:text-slate-400">
+                        No study materials uploaded yet.
+                      </p>
                     ) : (
-                      dashboard!.announcements.map((a) => (
-                        <div key={a.id} className="p-4">
-                          <p className="text-sm font-bold text-[#0F172A] dark:text-white">{a.title}</p>
-                          <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">{a.body}</p>
+                      dashboard!.availableMaterials!.map((m) => (
+                        <div key={m.id} className="flex items-center justify-between gap-2 px-4 py-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-bold text-[#111827] dark:text-white">{m.title}</p>
+                            <p className="text-[11px] text-[#4B5563] dark:text-slate-400">
+                              {m.subjectName} · {m.category}
+                            </p>
+                          </div>
+                          <a
+                            href={`/api/student/materials/${m.id}/download`}
+                            className="shrink-0 rounded-md border border-[#0B5E2E] px-2.5 py-1 text-[11px] font-bold text-[#0B5E2E] hover:bg-emerald-50 dark:text-emerald-400"
+                          >
+                            Get
+                          </a>
                         </div>
                       ))
                     )}
                   </div>
-                </div>
+                </section>
+
+                <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-4 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                    <h2 className="font-display text-sm font-bold text-[#111827] dark:text-white">Announcements</h2>
+                  </div>
+                  <div className="divide-y divide-[#E5E7EB] dark:divide-slate-800">
+                    {(dashboard?.announcements || []).length === 0 ? (
+                      <p className="p-4 text-xs text-[#4B5563] dark:text-slate-400">No announcements at this time.</p>
+                    ) : (
+                      dashboard!.announcements.map((a) => (
+                        <div key={a.id} className="p-4">
+                          <p className="text-xs font-bold text-[#111827] dark:text-white">{a.title}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-[#4B5563] dark:text-slate-400">{a.body}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </section>
+
+                <section className="rounded-md border border-[#CBD5E1] bg-white lg:col-span-4 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                    <h2 className="font-display text-sm font-bold text-[#111827] dark:text-white">Leaderboard</h2>
+                    <button
+                      type="button"
+                      onClick={() => selectTab('leaderboard')}
+                      className="text-xs font-bold text-[#0B5E2E] hover:underline dark:text-emerald-400"
+                    >
+                      View Rankings
+                    </button>
+                  </div>
+                  <div className="divide-y divide-[#E5E7EB] dark:divide-slate-800">
+                    {(dashboard?.leaderboard || []).length === 0 ? (
+                      <p className="p-4 text-xs text-[#4B5563] dark:text-slate-400">
+                        Complete an exam to appear on the UTME leaderboard.
+                      </p>
+                    ) : (
+                      dashboard!.leaderboard!.map((entry) => (
+                        <div
+                          key={entry.userId}
+                          className={`flex items-center justify-between gap-2 px-4 py-2.5 text-xs ${
+                            entry.isCurrentUser ? 'bg-emerald-50/70 dark:bg-emerald-950/30' : ''
+                          }`}
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-[#0B5E2E] font-mono text-[11px] font-bold text-white">
+                              {entry.rank}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate font-bold text-[#111827] dark:text-white">
+                                {entry.fullName} {entry.isCurrentUser ? '(You)' : ''}
+                              </p>
+                              <p className="truncate text-[11px] text-[#4B5563] dark:text-slate-400">
+                                {entry.intendedCourse}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="shrink-0 font-mono text-xs font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
+                            {entry.bestScoreOutOf400}/400
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </section>
               </div>
             </div>
           )}
@@ -796,20 +988,85 @@ export default function StudentWorkspace({
           )}
           {tab === 'analytics' && <AnalyticsView />}
 
+          {tab === 'leaderboard' && (
+            <div className="space-y-5">
+              <div>
+                <h1 className="font-display text-xl font-bold text-[#0B5E2E] dark:text-emerald-400">
+                  UTME Candidate Leaderboard
+                </h1>
+                <p className="mt-1 text-sm text-[#4B5563] dark:text-slate-400">
+                  Top candidate scores based on completed UTME CBT examinations.
+                </p>
+              </div>
+
+              <div className="overflow-hidden rounded-md border border-[#CBD5E1] bg-white dark:border-slate-800 dark:bg-slate-900">
+                {leaderboardLoading ? (
+                  <p className="p-6 text-center text-sm text-[#4B5563]">Loading leaderboard...</p>
+                ) : leaderboardRows.length === 0 ? (
+                  <p className="p-6 text-center text-sm text-[#4B5563]">
+                    No ranked examinations yet. Complete an examination to join the leaderboard.
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="border-b border-[#CBD5E1] bg-[#F3F4F6] text-xs font-bold text-[#374151] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+                        <tr>
+                          <th className="px-4 py-3">Rank</th>
+                          <th className="px-4 py-3">Candidate</th>
+                          <th className="px-4 py-3">Course</th>
+                          <th className="px-4 py-3 text-right">Attempts</th>
+                          <th className="px-4 py-3 text-right">Avg %</th>
+                          <th className="px-4 py-3 text-right">Best Score</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E5E7EB] dark:divide-slate-800">
+                        {leaderboardRows.map((row) => (
+                          <tr
+                            key={row.userId}
+                            className={row.isCurrentUser ? 'bg-emerald-50/70 dark:bg-emerald-950/30' : ''}
+                          >
+                            <td className="px-4 py-3 font-mono text-xs font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
+                              #{row.rank}
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-[#111827] dark:text-white">
+                              {row.fullName} {row.isCurrentUser ? '(You)' : ''}
+                            </td>
+                            <td className="px-4 py-3 text-xs text-[#4B5563] dark:text-slate-400">
+                              {row.intendedCourse}
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-xs tabular-nums">
+                              {row.attemptsCount}
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-xs tabular-nums">
+                              {row.averagePercentage}%
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-xs font-bold text-[#0B5E2E] tabular-nums dark:text-emerald-400">
+                              {row.bestScoreOutOf400}/400
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {tab === 'materials' && (
             <div className="space-y-5">
               <div>
-                <h1 className="font-display text-xl font-bold text-[#0F2447] dark:text-white">Study Materials</h1>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                <h1 className="font-display text-xl font-bold text-[#0B5E2E] dark:text-emerald-400">Study Materials</h1>
+                <p className="mt-1 text-sm text-[#4B5563] dark:text-slate-400">
                   Download notes, tutorials, and past question files by subject.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 rounded-lg border border-slate-300 bg-white p-4 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
+              <div className="grid grid-cols-1 gap-3 rounded-md border border-[#CBD5E1] bg-white p-4 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
                 <select
                   value={matSubjectId}
                   onChange={(e) => setMatSubjectId(e.target.value)}
-                  className="h-11 rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                  className="h-11 rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                 >
                   <option value="">All Subjects</option>
                   {matSubjects.map((s) => (
@@ -819,7 +1076,7 @@ export default function StudentWorkspace({
                 <select
                   value={matCategory}
                   onChange={(e) => setMatCategory(e.target.value)}
-                  className="h-11 rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                  className="h-11 rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                 >
                   <option value="All">All Categories</option>
                   <option value="Past Questions">Past Questions</option>
@@ -829,22 +1086,22 @@ export default function StudentWorkspace({
                 </select>
               </div>
 
-              <div className="divide-y divide-slate-200 rounded-lg border border-slate-300 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+              <div className="divide-y divide-[#E5E7EB] rounded-md border border-[#CBD5E1] bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
                 {materials.length === 0 ? (
-                  <p className="p-6 text-center text-sm text-slate-500">No study materials found.</p>
+                  <p className="p-6 text-center text-sm text-[#4B5563]">No study materials found.</p>
                 ) : (
                   materials.map((m) => (
                     <div key={m.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-[#1D4ED8] dark:text-blue-400">
+                        <p className="text-xs font-semibold text-[#0B5E2E] dark:text-emerald-400">
                           {m.subjectName} · {m.category} · {(m.fileSizeBytes / 1024).toFixed(1)} KB
                         </p>
-                        <h3 className="mt-0.5 text-sm font-bold text-slate-900 dark:text-white">{m.title}</h3>
-                        <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">{m.description}</p>
+                        <h3 className="mt-0.5 text-sm font-bold text-[#111827] dark:text-white">{m.title}</h3>
+                        <p className="mt-0.5 text-xs text-[#4B5563] dark:text-slate-400">{m.description}</p>
                       </div>
                       <a
                         href={`/api/student/materials/${m.id}/download`}
-                        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-md bg-[#0F2447] px-4 py-2 text-xs font-semibold text-white hover:bg-[#173566]"
+                        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-md bg-[#0B5E2E] px-4 py-2 text-xs font-bold text-white hover:bg-[#084722]"
                       >
                         <Download className="h-4 w-4" />
                         <span>Download</span>
@@ -859,7 +1116,7 @@ export default function StudentWorkspace({
           {tab === 'notifications' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className="font-display text-xl font-bold text-[#0F2447] dark:text-white">Messages</h1>
+                <h1 className="font-display text-xl font-bold text-[#0B5E2E] dark:text-emerald-400">Messages</h1>
                 <button
                   type="button"
                   onClick={async () => {
@@ -871,14 +1128,14 @@ export default function StudentWorkspace({
                       // handled gracefully
                     }
                   }}
-                  className="min-h-[38px] rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  className="min-h-[38px] rounded-md border border-[#CBD5E1] bg-white px-3 text-xs font-semibold text-[#374151] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                 >
                   Mark All Read
                 </button>
               </div>
-              <div className="divide-y divide-slate-200 rounded-lg border border-slate-300 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+              <div className="divide-y divide-[#E5E7EB] rounded-md border border-[#CBD5E1] bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
                 {notifications.length === 0 ? (
-                  <p className="p-6 text-center text-sm text-slate-500">No messages yet.</p>
+                  <p className="p-6 text-center text-sm text-[#4B5563]">No messages yet.</p>
                 ) : (
                   notifications.map((n) => (
                     <div
@@ -895,13 +1152,13 @@ export default function StudentWorkspace({
                           }
                         }
                       }}
-                      className={`cursor-pointer p-4 ${n.isRead ? '' : 'bg-blue-50/60 dark:bg-blue-950/30'}`}
+                      className={`cursor-pointer p-4 ${n.isRead ? '' : 'bg-emerald-50/60 dark:bg-emerald-950/30'}`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">{n.title}</h3>
-                        <span className="text-[11px] text-slate-500">{new Date(n.createdAt).toLocaleDateString()}</span>
+                        <h3 className="text-sm font-bold text-[#111827] dark:text-white">{n.title}</h3>
+                        <span className="text-[11px] text-[#4B5563]">{new Date(n.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{n.message}</p>
+                      <p className="mt-1 text-xs text-[#374151] dark:text-slate-300">{n.message}</p>
                     </div>
                   ))
                 )}
@@ -911,17 +1168,17 @@ export default function StudentWorkspace({
 
           {tab === 'profile' && (
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-              <div className="rounded-lg border border-slate-300 bg-white p-5 lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
-                <h1 className="font-display text-lg font-bold text-[#0F2447] dark:text-white">My Profile</h1>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
+              <div className="rounded-md border border-[#CBD5E1] bg-white p-5 lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
+                <h1 className="font-display text-lg font-bold text-[#0B5E2E] dark:text-emerald-400">My Profile</h1>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3 dark:border-slate-700 dark:bg-slate-950">
                   <div>
-                    <p className="text-xs text-slate-500">Registration Number</p>
-                    <p className="font-mono text-sm font-bold text-[#0F2447] dark:text-blue-400">
+                    <p className="text-xs text-[#4B5563]">Registration Number</p>
+                    <p className="font-mono text-sm font-bold text-[#0B5E2E] dark:text-emerald-400">
                       {user.registrationNumber}
                     </p>
                   </div>
                   {user.emailVerified ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#16A34A]">
                       <CheckCircle2 className="h-4 w-4" /> Email Verified
                     </span>
                   ) : (
@@ -934,85 +1191,85 @@ export default function StudentWorkspace({
                     </button>
                   )}
                 </div>
-                {verifyMsg && <p className="mt-2 text-xs text-emerald-700">{verifyMsg}</p>}
+                {verifyMsg && <p className="mt-2 text-xs text-[#16A34A]">{verifyMsg}</p>}
 
                 <form onSubmit={handleSaveProfile} className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Full Name</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151] dark:text-slate-400">Full Name</label>
                     <input
                       value={profileForm.fullName}
                       onChange={(e) => setProfileForm((f) => ({ ...f, fullName: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Phone Number</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151] dark:text-slate-400">Phone Number</label>
                     <input
                       value={profileForm.phoneNumber}
                       onChange={(e) => setProfileForm((f) => ({ ...f, phoneNumber: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">JAMB Year</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151] dark:text-slate-400">JAMB Year</label>
                     <input
                       type="number"
                       value={profileForm.jambYear}
                       onChange={(e) => setProfileForm((f) => ({ ...f, jambYear: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Intended Course</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151] dark:text-slate-400">Intended Course</label>
                     <input
                       value={profileForm.intendedCourse}
                       onChange={(e) => setProfileForm((f) => ({ ...f, intendedCourse: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Preferred Institution</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151] dark:text-slate-400">Preferred Institution</label>
                     <input
                       value={profileForm.preferredInstitution}
                       onChange={(e) => setProfileForm((f) => ({ ...f, preferredInstitution: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
-                  {profileMsg && <p className="sm:col-span-2 text-xs font-semibold text-emerald-700">{profileMsg}</p>}
+                  {profileMsg && <p className="sm:col-span-2 text-xs font-semibold text-[#16A34A]">{profileMsg}</p>}
                   <div className="sm:col-span-2">
-                    <button type="submit" className="min-h-[42px] rounded-md bg-[#0F2447] px-5 text-sm font-semibold text-white hover:bg-[#173566]">
+                    <button type="submit" className="min-h-[42px] rounded-md bg-[#0B5E2E] px-5 text-sm font-bold text-white hover:bg-[#084722]">
                       Save Profile
                     </button>
                   </div>
                 </form>
               </div>
 
-              <div className="rounded-lg border border-slate-300 bg-white p-5 lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
-                <h2 className="font-display text-lg font-bold text-[#0F2447] dark:text-white">Change Password</h2>
+              <div className="rounded-md border border-[#CBD5E1] bg-white p-5 lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
+                <h2 className="font-display text-lg font-bold text-[#0B5E2E] dark:text-emerald-400">Change Password</h2>
                 <form onSubmit={handleChangePassword} className="mt-4 space-y-3.5">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">Current Password</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151] dark:text-slate-400">Current Password</label>
                     <input
                       type="password"
                       required
                       value={pwForm.currentPassword}
                       onChange={(e) => setPwForm((f) => ({ ...f, currentPassword: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-400">New Password</label>
+                    <label className="mb-1 block text-xs font-semibold text-[#374151] dark:text-slate-400">New Password</label>
                     <input
                       type="password"
                       required
                       minLength={8}
                       value={pwForm.newPassword}
                       onChange={(e) => setPwForm((f) => ({ ...f, newPassword: e.target.value }))}
-                      className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="h-11 w-full rounded-md border border-[#CBD5E1] bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
-                  {pwMsg && <p className="text-xs font-semibold text-[#1D4ED8]">{pwMsg}</p>}
-                  <button type="submit" className="min-h-[42px] rounded-md bg-[#0F2447] px-4 text-sm font-semibold text-white hover:bg-[#173566]">
+                  {pwMsg && <p className="text-xs font-semibold text-[#0B5E2E]">{pwMsg}</p>}
+                  <button type="submit" className="min-h-[42px] rounded-md bg-[#0B5E2E] px-4 text-sm font-bold text-white hover:bg-[#084722]">
                     Update Password
                   </button>
                 </form>
@@ -1021,24 +1278,24 @@ export default function StudentWorkspace({
           )}
 
           {tab === 'settings' && (
-            <div className="max-w-2xl rounded-lg border border-slate-300 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-              <h1 className="font-display text-lg font-bold text-[#0F2447] dark:text-white">Examination Settings</h1>
-              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+            <div className="max-w-2xl rounded-md border border-[#CBD5E1] bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <h1 className="font-display text-lg font-bold text-[#0B5E2E] dark:text-emerald-400">Examination Settings</h1>
+              <p className="mt-1 text-xs text-[#4B5563] dark:text-slate-400">
                 Changes are saved automatically to your account.
               </p>
 
-              <div className="mt-5 divide-y divide-slate-200 dark:divide-slate-800">
+              <div className="mt-5 divide-y divide-[#E5E7EB] dark:divide-slate-800">
                 <div className="flex items-center justify-between py-3.5">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">Display Theme</p>
-                    <p className="text-xs text-slate-500">Choose light or dark screen mode</p>
+                    <p className="text-sm font-semibold text-[#111827] dark:text-white">Display Theme</p>
+                    <p className="text-xs text-[#4B5563]">Choose light or dark screen mode</p>
                   </div>
                   <button
                     type="button"
                     onClick={() =>
                       updatePreference({ theme: user.preferences?.theme === 'dark' ? 'light' : 'dark' })
                     }
-                    className="inline-flex min-h-[38px] items-center gap-2 rounded-md border border-slate-300 px-3 text-xs font-semibold dark:border-slate-700"
+                    className="inline-flex min-h-[38px] items-center gap-2 rounded-md border border-[#CBD5E1] px-3 text-xs font-semibold dark:border-slate-700"
                   >
                     {user.preferences?.theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
                     <span>{user.preferences?.theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
@@ -1047,13 +1304,13 @@ export default function StudentWorkspace({
 
                 <div className="flex items-center justify-between py-3.5">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">Question Text Size</p>
-                    <p className="text-xs text-slate-500">Adjust question font size inside the exam screen</p>
+                    <p className="text-sm font-semibold text-[#111827] dark:text-white">Question Text Size</p>
+                    <p className="text-xs text-[#4B5563]">Adjust question font size inside the exam screen</p>
                   </div>
                   <select
                     value={user.preferences?.fontSize || 'normal'}
                     onChange={(e) => updatePreference({ fontSize: e.target.value as 'normal' | 'large' })}
-                    className="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold dark:border-slate-700 dark:bg-slate-800"
+                    className="h-9 rounded-md border border-[#CBD5E1] bg-white px-3 text-xs font-semibold dark:border-slate-700 dark:bg-slate-800"
                   >
                     <option value="normal">Standard</option>
                     <option value="large">Large</option>
@@ -1062,27 +1319,27 @@ export default function StudentWorkspace({
 
                 <label className="flex items-center justify-between py-3.5">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">Show Question Number Grid</p>
-                    <p className="text-xs text-slate-500">Display question grid beside questions on desktop</p>
+                    <p className="text-sm font-semibold text-[#111827] dark:text-white">Show Question Palette</p>
+                    <p className="text-xs text-[#4B5563]">Display question palette beside questions on desktop</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={user.preferences?.showQuestionPalette !== false}
                     onChange={(e) => updatePreference({ showQuestionPalette: e.target.checked })}
-                    className="h-4 w-4 rounded text-[#1D4ED8]"
+                    className="h-4 w-4 rounded accent-[#0B5E2E]"
                   />
                 </label>
 
                 <label className="flex items-center justify-between py-3.5">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">Move to Next Question Automatically</p>
-                    <p className="text-xs text-slate-500">Advance after picking option A, B, C, or D</p>
+                    <p className="text-sm font-semibold text-[#111827] dark:text-white">Move to Next Question Automatically</p>
+                    <p className="text-xs text-[#4B5563]">Advance after picking option A, B, C, or D</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={Boolean(user.preferences?.autoNextQuestion)}
                     onChange={(e) => updatePreference({ autoNextQuestion: e.target.checked })}
-                    className="h-4 w-4 rounded text-[#1D4ED8]"
+                    className="h-4 w-4 rounded accent-[#0B5E2E]"
                   />
                 </label>
               </div>
@@ -1094,7 +1351,7 @@ export default function StudentWorkspace({
       {/* Mobile Bottom Tab Bar */}
       <nav
         aria-label="Primary mobile navigation"
-        className="fixed right-0 bottom-0 left-0 z-30 grid grid-cols-5 border-t border-slate-300 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden dark:border-slate-800 dark:bg-slate-900"
+        className="fixed right-0 bottom-0 left-0 z-30 grid grid-cols-5 border-t border-[#CBD5E1] bg-white pb-[env(safe-area-inset-bottom)] lg:hidden dark:border-slate-800 dark:bg-slate-900"
       >
         {primaryMobileTabs.map((item) => {
           const Icon = item.icon;
@@ -1107,8 +1364,8 @@ export default function StudentWorkspace({
               aria-current={active ? 'page' : undefined}
               className={`flex min-h-[54px] flex-col items-center justify-center gap-1 border-t-2 px-1 text-[11px] leading-none font-semibold ${
                 active
-                  ? 'border-[#1D4ED8] text-[#1D4ED8] dark:border-blue-400 dark:text-blue-400'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                  ? 'border-[#0B5E2E] text-[#0B5E2E] dark:border-emerald-400 dark:text-emerald-400'
+                  : 'border-transparent text-[#4B5563] hover:text-[#111827] dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 1.75} />
@@ -1122,8 +1379,8 @@ export default function StudentWorkspace({
           aria-expanded={mobileNavOpen}
           className={`flex min-h-[54px] flex-col items-center justify-center gap-1 border-t-2 px-1 text-[11px] leading-none font-semibold ${
             isMoreTabActive
-              ? 'border-[#1D4ED8] text-[#1D4ED8] dark:border-blue-400 dark:text-blue-400'
-              : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+              ? 'border-[#0B5E2E] text-[#0B5E2E] dark:border-emerald-400 dark:text-emerald-400'
+              : 'border-transparent text-[#4B5563] hover:text-[#111827] dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
           <LayoutGrid className="h-5 w-5 shrink-0" strokeWidth={isMoreTabActive ? 2.25 : 1.75} />

@@ -18,9 +18,40 @@ import {
   subjectCombinations,
   subjects,
   topics,
+  users,
 } from '../../db/schema.ts';
 import { AuthRequest, requireStudentAuth } from '../middleware/auth.ts';
 import { resolveSafeLocalPath } from '../utils/storage.ts';
+
+async function getLeaderboardEntries(currentUserId: string, limitCount = 20) {
+  const rows = await db
+    .select({
+      userId: users.id,
+      fullName: users.fullName,
+      intendedCourse: users.intendedCourse,
+      jambYear: users.jambYear,
+      bestScoreOutOf400: sql<number>`max(${examinationResults.scoreOutOf400})::int`,
+      averagePercentage: sql<number>`round(avg(${examinationResults.percentage})::numeric, 1)::float`,
+      attemptsCount: sql<number>`count(${examinationResults.id})::int`,
+    })
+    .from(examinationResults)
+    .innerJoin(users, eq(examinationResults.userId, users.id))
+    .groupBy(users.id, users.fullName, users.intendedCourse, users.jambYear)
+    .orderBy(desc(sql`max(${examinationResults.scoreOutOf400})`), desc(sql`avg(${examinationResults.percentage})`))
+    .limit(limitCount);
+
+  return rows.map((row, index) => ({
+    rank: index + 1,
+    userId: row.userId,
+    fullName: row.fullName,
+    intendedCourse: row.intendedCourse || 'UTME Candidate',
+    jambYear: row.jambYear,
+    bestScoreOutOf400: Number(row.bestScoreOutOf400 || 0),
+    averagePercentage: Number(row.averagePercentage || 0),
+    attemptsCount: Number(row.attemptsCount || 0),
+    isCurrentUser: row.userId === currentUserId,
+  }));
+}
 
 const router = Router();
 router.use('/student', requireStudentAuth);
@@ -44,6 +75,10 @@ router.get('/student/dashboard', async (req: AuthRequest, res) => {
       totalAttempted > 0 ? Math.max(...results.map((r) => Number(r.percentage))) : 0;
     const highest400 =
       totalAttempted > 0 ? Math.max(...results.map((r) => r.scoreOutOf400)) : 0;
+    const totalQuestionsAttempted = results.reduce(
+      (acc, r) => acc + Math.max(0, Number(r.correctCount) + Number(r.wrongCount)),
+      0
+    );
 
     const activeSessions = await db
       .select()
@@ -71,6 +106,16 @@ router.get('/student/dashboard', async (req: AuthRequest, res) => {
       .where(eq(mockExaminations.isActive, true))
       .orderBy(mockExaminations.startAt);
 
+    const materialsList = await db
+      .select()
+      .from(studyMaterials)
+      .where(eq(studyMaterials.isActive, true))
+      .orderBy(desc(studyMaterials.createdAt))
+      .limit(4);
+
+    const allSubs = await db.select().from(subjects);
+    const subMap = new Map(allSubs.map((s) => [s.id, s]));
+
     const notifRows = await db
       .select()
       .from(notifications)
@@ -82,12 +127,15 @@ router.get('/student/dashboard', async (req: AuthRequest, res) => {
     const readSet = new Set(readRows.map((r) => r.notificationId));
     const unreadNotificationsCount = notifRows.filter((n) => !readSet.has(n.id)).length;
 
+    const leaderboard = await getLeaderboardEntries(userId, 5);
+
     res.json({
       stats: {
         totalAttempted,
         averagePercentage: avgPct,
         highestPercentage: highestPct,
         highestScoreOutOf400: highest400,
+        totalQuestionsAttempted,
         overallProgress: Math.min(100, Math.round(avgPct)),
         unreadNotificationsCount,
       },
@@ -106,10 +154,28 @@ router.get('/student/dashboard', async (req: AuthRequest, res) => {
       announcements: pinnedAnnouncements,
       practiceExams: practiceList,
       upcomingMocks: activeMocks.slice(0, 3),
+      availableMaterials: materialsList.map((m) => ({
+        id: m.id,
+        title: m.title,
+        category: m.category,
+        subjectName: subMap.get(m.subjectId)?.name || 'General',
+        fileSizeBytes: m.fileSizeBytes,
+      })),
+      leaderboard,
     });
   } catch (err) {
     console.error('[student/dashboard] Error:', err);
     res.status(500).json({ error: 'Failed to load student dashboard.' });
+  }
+});
+
+router.get('/student/leaderboard', async (req: AuthRequest, res) => {
+  try {
+    const entries = await getLeaderboardEntries(req.actor!.id, 25);
+    res.json({ leaderboard: entries });
+  } catch (err) {
+    console.error('[student/leaderboard] Error:', err);
+    res.status(500).json({ error: 'Failed to load leaderboard.' });
   }
 });
 
